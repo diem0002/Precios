@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Precios de vinos</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+    select, input { margin: 5px 0; padding: 5px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>Precios de vinos</h1>
+
+  <label for="filtroBodega">Filtrar por bodega:</label>
+  <select id="filtroBodega">
+    <option value="">Todas</option>
+  </select>
+
+  <input type="text" id="buscador" placeholder="Buscar vino...">
+
+  <table id="tabla">
+    <thead>
+      <tr><th>Producto</th><th>Bodega</th><th>Precio</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- PapaParse: lectura robusta del CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const csvUrl = 'https://docs.google.com/uc?export=download&id=1q6m8_zq9_Sl35XO352e1iMgmImxil0Mn';
+
+    async function cargarCSV() {
+      const resp = await fetch(csvUrl);
+      const text = await resp.text();
+      const data = Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true
+      }).data;
+      return data;
+    }
+
+    function mostrarDatos(data) {
+      const sel = document.getElementById('filtroBodega');
+      const tab = document.getElementById('tabla').getElementsByTagName('tbody')[0];
+      const search = document.getElementById('buscador').value.toLowerCase();
+
+      // Poblar menú de bodegas si aún no está
+      if (sel.options.length <= 1) {
+        const bodegas = [...new Set(data.map(d => d.Bodega).filter(Boolean))].sort();
+        bodegas.forEach(b => sel.add(new Option(b, b)));
+      }
+
+      const filtro = sel.value;
+      tab.innerHTML = '';
+
+      data.forEach(d => {
+        if ((filtro && d.Bodega !== filtro) ||
+            (search && !d.Producto.toLowerCase().includes(search))) return;
+
+        const tr = tab.insertRow();
+        tr.insertCell().textContent = d.Producto;
+        tr.insertCell().textContent = d.Bodega;
+        tr.insertCell().textContent = d.Precio;
+      });
+    }
+
+    // Eventos de filtros
+    document.getElementById('filtroBodega').addEventListener('change', () => {
+      cargarCSV().then(mostrarDatos);
+    });
+
+    document.getElementById('buscador').addEventListener('input', () => {
+      cargarCSV().then(mostrarDatos);
+    });
+
+    // Carga inicial
+    cargarCSV().then(mostrarDatos);
+  </script>
+</body>
+</html>
