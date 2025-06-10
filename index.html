@@ -1,84 +1,229 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Precios de vinos</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-    select, input { margin: 5px 0; padding: 5px; width: 100%; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f4f4f4; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Bodegas</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .scanner-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            position: relative;
+        }
+        #scanner {
+            width: 100%;
+            border: 2px solid #333;
+        }
+        #result {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 50px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .hidden {
+            display: none;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn-scan {
+            background-color: #2196F3;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Precios de vinos</h1>
+    <h1>Consulta de Productos por Bodega</h1>
+    
+    <div id="scanner-section">
+        <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
+        <div class="scanner-container hidden" id="scannerContainer">
+            <canvas id="scanner" class="hidden"></canvas>
+            <video id="video" width="100%" autoplay playsinline class="hidden"></video>
+            <button id="stopScanner" class="btn">Detener Escáner</button>
+        </div>
+    </div>
+    
+    <div id="result">Escanea un código QR para ver los productos de la bodega</div>
+    
+    <div id="loading" class="loading hidden">
+        <p>Cargando datos...</p>
+    </div>
+    
+    <div id="products-container" class="hidden">
+        <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Bodega</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody id="products-body">
+                <!-- Los productos se insertarán aquí -->
+            </tbody>
+        </table>
+    </div>
 
-  <label for="filtroBodega">Filtrar por bodega:</label>
-  <select id="filtroBodega">
-    <option value="">Todas</option>
-  </select>
-
-  <input type="text" id="buscador" placeholder="Buscar vino...">
-
-  <table id="tabla">
-    <thead>
-      <tr><th>Producto</th><th>Bodega</th><th>Precio</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- PapaParse: lectura robusta del CSV -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    const csvUrl = 'https://docs.google.com/uc?export=download&id=1q6m8_zq9_Sl35XO352e1iMgmImxil0Mn';
-
-    async function cargarCSV() {
-      const resp = await fetch(csvUrl);
-      const text = await resp.text();
-      const data = Papa.parse(text, {
-        header: true,
-        skipEmptyLines: true
-      }).data;
-      return data;
-    }
-
-    function mostrarDatos(data) {
-      const sel = document.getElementById('filtroBodega');
-      const tab = document.getElementById('tabla').getElementsByTagName('tbody')[0];
-      const search = document.getElementById('buscador').value.toLowerCase();
-
-      // Poblar menú de bodegas si aún no está
-      if (sel.options.length <= 1) {
-        const bodegas = [...new Set(data.map(d => d.Bodega).filter(Boolean))].sort();
-        bodegas.forEach(b => sel.add(new Option(b, b)));
-      }
-
-      const filtro = sel.value;
-      tab.innerHTML = '';
-
-      data.forEach(d => {
-        if ((filtro && d.Bodega !== filtro) ||
-            (search && !d.Producto.toLowerCase().includes(search))) return;
-
-        const tr = tab.insertRow();
-        tr.insertCell().textContent = d.Producto;
-        tr.insertCell().textContent = d.Bodega;
-        tr.insertCell().textContent = d.Precio;
-      });
-    }
-
-    // Eventos de filtros
-    document.getElementById('filtroBodega').addEventListener('change', () => {
-      cargarCSV().then(mostrarDatos);
-    });
-
-    document.getElementById('buscador').addEventListener('input', () => {
-      cargarCSV().then(mostrarDatos);
-    });
-
-    // Carga inicial
-    cargarCSV().then(mostrarDatos);
-  </script>
+    <script>
+        // Reemplaza esta URL con el enlace público que generaste
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1NynGJTiH1WWDm8MgG4X4YKmRZqpkT-NEU5YAjiZWp8w/edit?usp=sharing';
+        
+        let productsData = [];
+        let videoStream = null;
+        
+        document.getElementById('startScanner').addEventListener('click', startScanner);
+        document.getElementById('stopScanner').addEventListener('click', stopScanner);
+        
+        // Cargar datos al iniciar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+        
+        async function loadData() {
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(SHEET_URL);
+                const csvData = await response.text();
+                
+                Papa.parse(csvData, {
+                    header: true,
+                    complete: function(results) {
+                        productsData = results.data;
+                        document.getElementById('loading').classList.add('hidden');
+                        console.log('Datos cargados:', productsData);
+                    },
+                    error: function(error) {
+                        console.error('Error al cargar datos:', error);
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+            }
+        }
+        
+        function startScanner() {
+            const scannerContainer = document.getElementById('scannerContainer');
+            const video = document.getElementById('video');
+            
+            scannerContainer.classList.remove('hidden');
+            document.getElementById('startScanner').classList.add('hidden');
+            
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function(stream) {
+                    videoStream = stream;
+                    video.srcObject = stream;
+                    video.classList.remove('hidden');
+                    video.play();
+                    
+                    requestAnimationFrame(tick);
+                })
+                .catch(function(err) {
+                    console.error("Error al acceder a la cámara:", err);
+                    document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
+                });
+        }
+        
+        function stopScanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
+            document.getElementById('scannerContainer').classList.add('hidden');
+            document.getElementById('startScanner').classList.remove('hidden');
+            document.getElementById('video').classList.add('hidden');
+        }
+        
+        function tick() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('scanner');
+            const context = canvas.getContext('2d');
+            
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.hidden = false;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                    stopScanner();
+                    showProducts(code.data);
+                }
+            }
+            
+            requestAnimationFrame(tick);
+        }
+        
+        function showProducts(bodegaName) {
+            document.getElementById('bodega-name').textContent = bodegaName;
+            document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
+            
+            const filteredProducts = productsData.filter(product => 
+                product.Bodega && product.Bodega.trim().toLowerCase() === bodegaName.trim().toLowerCase()
+            );
+            
+            const productsBody = document.getElementById('products-body');
+            productsBody.innerHTML = '';
+            
+            if (filteredProducts.length === 0) {
+                productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos para esta bodega</td></tr>';
+            } else {
+                filteredProducts.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.Producto || 'N/A'}</td>
+                        <td>${product.Bodega || 'N/A'}</td>
+                        <td>${product.Precio || 'N/A'}</td>
+                    `;
+                    productsBody.appendChild(row);
+                });
+            }
+            
+            document.getElementById('products-container').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
