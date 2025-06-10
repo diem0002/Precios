@@ -2,135 +2,198 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consulta de Bodegas</title>
+
+  <!-- Favicon -->
   <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/x-icon">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
   <style>
+    /* Paleta de colores */
+    :root {
+      --lola: #dccdd5;
+      --bouquet: #b494a4;
+      --tawny-port: #642444;
+      --strikemaster: #8d5e75;
+      --mountbatten-pink-1: #a48494;
+      --mountbatten-pink-2: #9c7c8c;
+      --au-chico: #845464;
+      --cosmic-1: #74445c;
+      --cosmic-2: #6c344c;
+      --finn: #682854;
+    }
+
+    /* Reset y base */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #2c003e;
-      color: #f3e9ff;
-      margin: 0;
-      padding: 0 15px;
-    }
-
-    header {
-      text-align: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
       padding: 20px;
+      background: var(--lola);
+      color: var(--tawny-port);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    header img {
-      width: 120px;
-      margin-bottom: 10px;
+    /* Logo */
+    .logo {
+      display: block;
+      margin: 0 auto 15px;
+      max-width: 150px;
+      filter: drop-shadow(2px 2px 3px var(--cosmic-2));
     }
 
     h1 {
-      color: #a259ff;
-      font-size: 1.8em;
-      margin-bottom: 10px;
+      text-align: center;
+      color: var(--finn);
+      margin-bottom: 25px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
     }
 
+    /* Scanner */
     .scanner-container {
+      width: 100%;
       max-width: 400px;
-      margin: 20px auto;
+      margin: 0 auto 20px;
       position: relative;
+      border: 2px solid var(--cosmic-1);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--mountbatten-pink-1);
+      box-shadow: 0 0 15px var(--cosmic-2);
     }
 
-    #scanner {
+    #scanner, #video {
       width: 100%;
-      border: 2px solid #a259ff;
+      display: block;
+      border-radius: 12px;
     }
 
     #result {
-      background-color: #3f0d57;
-      margin: 20px auto;
-      padding: 15px;
-      border-radius: 8px;
-      max-width: 600px;
+      margin: 20px 0;
+      padding: 15px 20px;
+      border-radius: 10px;
+      background: var(--bouquet);
+      color: var(--tawny-port);
+      font-weight: 600;
+      box-shadow: inset 0 0 5px var(--au-chico);
       text-align: center;
     }
 
+    /* Tabla */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: var(--mountbatten-pink-2);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px var(--cosmic-2);
     }
 
     th, td {
-      border: 1px solid #a259ff;
-      padding: 10px;
+      border: 1px solid var(--au-chico);
+      padding: 10px 15px;
       text-align: left;
+      color: var(--lola);
     }
 
     th {
-      background-color: #5e0b7a;
-      color: #fff;
+      background-color: var(--finn);
+      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
-    td {
-      background-color: #3f0d57;
-    }
-
-    .hidden {
-      display: none;
-    }
-
+    /* Botones */
     .btn {
-      background-color: #5e0b7a;
-      color: white;
-      padding: 12px 20px;
+      background-color: var(--finn);
+      color: var(--lola);
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 25px;
       cursor: pointer;
-      margin: 10px auto;
-      display: block;
-      font-size: 1em;
+      margin: 5px;
+      font-weight: 600;
+      box-shadow: 0 4px 8px var(--cosmic-2);
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .btn:hover {
+      background-color: var(--tawny-port);
+    }
+    .btn:active {
+      background-color: var(--cosmic-1);
+      box-shadow: inset 0 0 8px var(--cosmic-2);
     }
 
     .btn-scan {
-      background-color: #a259ff;
-      color: #2c003e;
+      background-color: var(--au-chico);
+    }
+    .btn-scan:hover {
+      background-color: var(--strikemaster);
     }
 
-    .btn:hover {
-      opacity: 0.85;
+    /* Ocultar elementos */
+    .hidden {
+      display: none !important;
     }
 
+    /* Cargando */
     .loading {
       text-align: center;
       padding: 20px;
+      color: var(--tawny-port);
+      font-weight: 600;
     }
 
-    @media (max-width: 600px) {
-      table, th, td {
-        font-size: 0.9em;
-      }
-
-      h1 {
-        font-size: 1.5em;
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
       }
 
       .btn {
         width: 100%;
+        padding: 12px 0;
+        font-size: 1.1rem;
+      }
+
+      table, th, td {
+        font-size: 0.9rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .scanner-container {
+        max-width: 100%;
       }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <img src="img/compañia de vinos logos-03.png" alt="Logo de la vinoteca">
-    <h1>Consulta de Productos por Bodega</h1>
-  </header>
+  <!-- Logo -->
+  <img src="img/compañia de vinos logos-03.png" alt="Logo Vinoteca" class="logo" />
+
+  <h1>Consulta de Productos por Bodega</h1>
 
   <div id="scanner-section">
     <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
     <div class="scanner-container hidden" id="scannerContainer">
       <canvas id="scanner" class="hidden"></canvas>
-      <video id="video" width="100%" autoplay playsinline class="hidden"></video>
+      <video id="video" autoplay playsinline class="hidden"></video>
       <button id="stopScanner" class="btn">Detener Escáner</button>
     </div>
   </div>
@@ -151,13 +214,15 @@
           <th>Precio</th>
         </tr>
       </thead>
-      <tbody id="products-body"></tbody>
+      <tbody id="products-body">
+        <!-- Los productos se insertarán aquí -->
+      </tbody>
     </table>
   </div>
 
   <script>
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT021U2WLy4t8F9H-4ZafrFYTo7evHnbYHvipI0TTPlUKN5T3Puo66S5Lrcg7hlgTZGNE9V9RkXxfWO/pub?gid=1497613061&single=true&output=csv';
-    
+
     let productsData = [];
     let videoStream = null;
 
@@ -170,6 +235,7 @@
 
     async function loadData() {
       document.getElementById('loading').classList.remove('hidden');
+
       try {
         const response = await fetch(SHEET_URL);
         const csvData = await response.text();
@@ -207,6 +273,7 @@
           video.srcObject = stream;
           video.classList.remove('hidden');
           video.play();
+
           requestAnimationFrame(tick);
         })
         .catch(function(err) {
@@ -220,62 +287,67 @@
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
       }
+
       document.getElementById('scannerContainer').classList.add('hidden');
       document.getElementById('startScanner').classList.remove('hidden');
       document.getElementById('video').classList.add('hidden');
+      document.getElementById('products-container').classList.add('hidden');
+      document.getElementById('result').textContent = 'Escanea un código QR para ver los productos de la bodega';
     }
 
     function tick() {
       const video = document.getElementById('video');
       const canvas = document.getElementById('scanner');
-      const context = canvas.getContext('2d');
+      const canvasContext = canvas.getContext('2d');
 
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.hidden = false;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
+          inversionAttempts: "attemptBoth",
         });
 
         if (code) {
+          showProductsForBodega(code.data);
           stopScanner();
-          showProducts(code.data);
+          return;
         }
       }
-
       requestAnimationFrame(tick);
     }
 
-    function showProducts(bodegaName) {
-      document.getElementById('bodega-name').textContent = bodegaName;
-      document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
+    function showProductsForBodega(bodega) {
+      const filtered = productsData.filter(p => p.bodega && p.bodega.trim().toLowerCase() === bodega.trim().toLowerCase());
 
-      const filteredProducts = productsData.filter(product =>
-        product.Bodega && product.Bodega.trim().toLowerCase() === bodegaName.trim().toLowerCase()
-      );
-
+      const productsContainer = document.getElementById('products-container');
       const productsBody = document.getElementById('products-body');
-      productsBody.innerHTML = '';
+      const bodegaNameElem = document.getElementById('bodega-name');
+      const resultElem = document.getElementById('result');
 
-      if (filteredProducts.length === 0) {
-        productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos para esta bodega</td></tr>';
-      } else {
-        filteredProducts.forEach(product => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${product.Producto || 'N/A'}</td>
-            <td>${product.Bodega || 'N/A'}</td>
-            <td>${product.Precio || 'N/A'}</td>
-          `;
-          productsBody.appendChild(row);
-        });
+      if (filtered.length === 0) {
+        resultElem.textContent = `No se encontraron productos para la bodega "${bodega}".`;
+        productsContainer.classList.add('hidden');
+        return;
       }
 
-      document.getElementById('products-container').classList.remove('hidden');
+      bodegaNameElem.textContent = bodega;
+      productsBody.innerHTML = '';
+
+      filtered.forEach(product => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${product.producto || '-'}</td>
+          <td>${product.bodega || '-'}</td>
+          <td>$${product.precio || '-'}</td>
+        `;
+        productsBody.appendChild(tr);
+      });
+
+      productsContainer.classList.remove('hidden');
+      resultElem.textContent = `Productos encontrados para la bodega "${bodega}":`;
     }
   </script>
 </body>
