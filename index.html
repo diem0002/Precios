@@ -97,7 +97,11 @@
       overflow: hidden;
       box-shadow: 0 4px 15px var(--cosmic-2);
     }
-
+    /* Ajustar ancho de la columna de precios */
+    td:nth-child(2), th:nth-child(2) {
+    min-width: 100px; /* Podés ajustar a 120px o más si hace falta */
+     text-align: right; /* Para alinear los precios a la derecha */
+    }
     th, td {
       border: 1px solid var(--au-chico);
       padding: 10px 15px;
