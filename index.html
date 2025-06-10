@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consulta de Bodegas</title>
-
-  <!-- Favicon -->
-  <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/x-icon">
-
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Bodegas</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <style>
     /* Paleta de colores */
@@ -186,209 +182,167 @@
 </head>
 <body>
 
-    <img src="img/compañia de vinos logos-03.png" alt="Logo Vinoteca" class="logo" />
-
     <h1>Consulta de Productos por Bodega</h1>
-  
+    
     <div id="scanner-section">
-      <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
-      <div class="scanner-container hidden" id="scannerContainer">
-        <canvas id="scanner"></canvas>
-        <video id="video" autoplay playsinline class="hidden"></video>
-        <button id="stopScanner" class="btn">Detener Escáner</button>
-      </div>
+        <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
+        <div class="scanner-container hidden" id="scannerContainer">
+            <canvas id="scanner" class="hidden"></canvas>
+            <video id="video" width="100%" autoplay playsinline class="hidden"></video>
+            <button id="stopScanner" class="btn">Detener Escáner</button>
+        </div>
     </div>
-  
+    
     <div id="result">Escanea un código QR para ver los productos de la bodega</div>
-  
+    
     <div id="loading" class="loading hidden">
-      <p>Cargando datos...</p>
+        <p>Cargando datos...</p>
     </div>
-  
+    
     <div id="products-container" class="hidden">
-      <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
-      <table id="products-table">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Bodega</th>
-            <th>Precio</th>
-          </tr>
-        </thead>
-        <tbody id="products-body"></tbody>
-      </table>
+        <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Bodega</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody id="products-body">
+                <!-- Los productos se insertarán aquí -->
+            </tbody>
+        </table>
     </div>
-  
+
     <script>
-      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT021U2WLy4t8F9H-4ZafrFYTo7evHnbYHvipI0TTPlUKN5T3Puo66S5Lrcg7hlgTZGNE9V9RkXxfWO/pub?gid=1497613061&single=true&output=csv';
-  
-      let productsData = [];
-      let videoStream = null;
-      let scanning = false;    // Controla si el escáner está activo
-      let animationFrameId = null;
-  
-      document.getElementById('startScanner').addEventListener('click', startScanner);
-      document.getElementById('stopScanner').addEventListener('click', stopScanner);
-  
-      window.addEventListener('DOMContentLoaded', () => {
-        loadData();
-      });
-  
-      async function loadData() {
-        document.getElementById('loading').classList.remove('hidden');
-  
-        try {
-          const response = await fetch(SHEET_URL);
-          const csvData = await response.text();
-  
-          Papa.parse(csvData, {
-            header: true,
-            complete: function(results) {
-              productsData = results.data;
-              document.getElementById('loading').classList.add('hidden');
-              console.log('Datos cargados:', productsData);
-            },
-            error: function(error) {
-              console.error('Error al cargar datos:', error);
-              document.getElementById('loading').classList.add('hidden');
-              document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+        // Reemplaza esta URL con el enlace público que generaste
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1NynGJTiH1WWDm8MgG4X4YKmRZqpkT-NEU5YAjiZWp8w/edit?usp=sharing';
+        
+        let productsData = [];
+        let videoStream = null;
+        
+        document.getElementById('startScanner').addEventListener('click', startScanner);
+        document.getElementById('stopScanner').addEventListener('click', stopScanner);
+        
+        // Cargar datos al iniciar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+        
+        async function loadData() {
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(SHEET_URL);
+                const csvData = await response.text();
+                
+                Papa.parse(csvData, {
+                    header: true,
+                    complete: function(results) {
+                        productsData = results.data;
+                        document.getElementById('loading').classList.add('hidden');
+                        console.log('Datos cargados:', productsData);
+                    },
+                    error: function(error) {
+                        console.error('Error al cargar datos:', error);
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
             }
-          });
-        } catch (error) {
-          console.error('Error:', error);
-          document.getElementById('loading').classList.add('hidden');
-          document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
         }
-      }
-  
-      function startScanner() {
-        if (scanning) return;  // No iniciar si ya está escaneando
-        scanning = true;
-  
-        const scannerContainer = document.getElementById('scannerContainer');
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('scanner');
-  
-        scannerContainer.classList.remove('hidden');
-        document.getElementById('startScanner').classList.add('hidden');
-  
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-          .then(function(stream) {
-            videoStream = stream;
-            video.srcObject = stream;
-            video.play();
-            video.classList.add('hidden'); // Ocultamos el video para usar solo canvas
-  
-            // Mostrar canvas y preparar tamaño
-            canvas.classList.remove('hidden');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-  
-            tick();  // Iniciar loop de escaneo
-          })
-          .catch(function(err) {
-            scanning = false;
-            console.error("Error al acceder a la cámara:", err);
-            document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
+        
+        function startScanner() {
+            const scannerContainer = document.getElementById('scannerContainer');
+            const video = document.getElementById('video');
+            
+            scannerContainer.classList.remove('hidden');
+            document.getElementById('startScanner').classList.add('hidden');
+            
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function(stream) {
+                    videoStream = stream;
+                    video.srcObject = stream;
+                    video.classList.remove('hidden');
+                    video.play();
+                    
+                    requestAnimationFrame(tick);
+                })
+                .catch(function(err) {
+                    console.error("Error al acceder a la cámara:", err);
+                    document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
+                });
+        }
+        
+        function stopScanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
             document.getElementById('scannerContainer').classList.add('hidden');
             document.getElementById('startScanner').classList.remove('hidden');
-          });
-      }
-  
-      function stopScanner() {
-        if (!scanning) return;
-        scanning = false;
-  
-        if (videoStream) {
-          videoStream.getTracks().forEach(track => track.stop());
-          videoStream = null;
+            document.getElementById('video').classList.add('hidden');
         }
-  
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-          animationFrameId = null;
+        
+        function tick() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('scanner');
+            const context = canvas.getContext('2d');
+            
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.hidden = false;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                    stopScanner();
+                    showProducts(code.data);
+                }
+            }
+            
+            requestAnimationFrame(tick);
         }
-  
-        document.getElementById('scannerContainer').classList.add('hidden');
-        document.getElementById('startScanner').classList.remove('hidden');
-        document.getElementById('video').classList.add('hidden');
-        document.getElementById('scanner').classList.add('hidden');
-        document.getElementById('products-container').classList.add('hidden');
-        document.getElementById('result').textContent = 'Escanea un código QR para ver los productos de la bodega';
-      }
-  
-      function tick() {
-        if (!scanning) return;
-  
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('scanner');
-        const ctx = canvas.getContext('2d');
-  
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-  
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "attemptBoth",
-          });
-  
-          if (code) {
-            // Dibuja un rectángulo rojo alrededor del código QR detectado
-            drawLine(ctx, code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
-            drawLine(ctx, code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
-            drawLine(ctx, code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
-            drawLine(ctx, code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
-  
-            showProductsForBodega(code.data);
-            stopScanner();
-            return;
-          }
-        }
-        animationFrameId = requestAnimationFrame(tick);
-      }
-  
-      function drawLine(ctx, begin, end, color) {
-        ctx.beginPath();
-        ctx.moveTo(begin.x, begin.y);
-        ctx.lineTo(end.x, end.y);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = color;
-        ctx.stroke();
-      }
-  
-      function showProductsForBodega(bodega) {
-        const filtered = productsData.filter(p => p.bodega && p.bodega.trim().toLowerCase() === bodega.trim().toLowerCase());
-  
-        const productsContainer = document.getElementById('products-container');
-        const productsBody = document.getElementById('products-body');
-        const bodegaNameElem = document.getElementById('bodega-name');
-        const resultElem = document.getElementById('result');
-  
-        if (filtered.length === 0) {
-          resultElem.textContent = `No se encontraron productos para la bodega "${bodega}".`;
-          productsContainer.classList.add('hidden');
-          return;
-        }
-  
-        bodegaNameElem.textContent = bodega;
-        productsBody.innerHTML = '';
-  
-        filtered.forEach(product => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${product.producto || '-'}</td>
-            <td>${product.bodega || '-'}</td>
-            <td>$${product.precio || '-'}</td>
-          `;
-          productsBody.appendChild(tr);
+        
+        function showProducts(bodegaName) {
+    document.getElementById('bodega-name').textContent = bodegaName;
+    document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
+    
+    const filteredProducts = productsData.filter(product => 
+        product.Bodega && product.Bodega.trim().toLowerCase() === bodegaName.trim().toLowerCase()
+    );
+    
+    const productsBody = document.getElementById('products-body');
+    productsBody.innerHTML = '';
+    
+    if (filteredProducts.length === 0) {
+        productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos para esta bodega</td></tr>';
+    } else {
+        filteredProducts.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${product.Producto || 'N/A'}</td>
+                <td>${product.Bodega || 'N/A'}</td>
+                <td>${product.Precio || 'N/A'}</td>
+            `;
+            productsBody.appendChild(row);
         });
-  
-        productsContainer.classList.remove('hidden');
-        resultElem.textContent = `Productos encontrados para la bodega "${bodega}":`;
-      }
+    }
+    
+    document.getElementById('products-container').classList.remove('hidden');
+}
+
     </script>
 </body>
 </html>
