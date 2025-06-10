@@ -186,210 +186,209 @@
 </head>
 <body>
 
-  <!-- Logo -->
-  <img src="img/compañia de vinos logos-03.png" alt="Logo Vinoteca" class="logo" />
+    <img src="img/compañia de vinos logos-03.png" alt="Logo Vinoteca" class="logo" />
 
-  <h1>Consulta de Productos por Bodega</h1>
-
-  <div id="scanner-section">
-    <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
-    <div class="scanner-container hidden" id="scannerContainer">
-      <canvas id="scanner" class="hidden"></canvas>
-      <video id="video" autoplay playsinline class="hidden"></video>
-      <button id="stopScanner" class="btn">Detener Escáner</button>
+    <h1>Consulta de Productos por Bodega</h1>
+  
+    <div id="scanner-section">
+      <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
+      <div class="scanner-container hidden" id="scannerContainer">
+        <canvas id="scanner"></canvas>
+        <video id="video" autoplay playsinline class="hidden"></video>
+        <button id="stopScanner" class="btn">Detener Escáner</button>
+      </div>
     </div>
-  </div>
-
-  <div id="result">Escanea un código QR para ver los productos de la bodega</div>
-
-  <div id="loading" class="loading hidden">
-    <p>Cargando datos...</p>
-  </div>
-
-  <div id="products-container" class="hidden">
-    <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
-    <table id="products-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Bodega</th>
-          <th>Precio</th>
-        </tr>
-      </thead>
-      <tbody id="products-body">
-        <!-- Los productos se insertarán aquí -->
-      </tbody>
-    </table>
-  </div>
-
-  <script>
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT021U2WLy4t8F9H-4ZafrFYTo7evHnbYHvipI0TTPlUKN5T3Puo66S5Lrcg7hlgTZGNE9V9RkXxfWO/pub?gid=1497613061&single=true&output=csv';
-
-    let productsData = [];
-    let videoStream = null;
-
-    const startBtn = document.getElementById('startScanner');
-    const stopBtn = document.getElementById('stopScanner');
-    const scannerContainer = document.getElementById('scannerContainer');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('scanner');
-    const canvasContext = canvas.getContext('2d');
-    const resultElem = document.getElementById('result');
-    const loadingElem = document.getElementById('loading');
-    const productsContainer = document.getElementById('products-container');
-    const productsBody = document.getElementById('products-body');
-    const bodegaNameElem = document.getElementById('bodega-name');
-
-    startBtn.addEventListener('click', startScanner);
-    stopBtn.addEventListener('click', stopScanner);
-
-    window.addEventListener('DOMContentLoaded', loadData);
-
-    async function loadData() {
-      loadingElem.classList.remove('hidden');
-      resultElem.textContent = 'Cargando datos...';
-
-      try {
-        const response = await fetch(SHEET_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const csvData = await response.text();
-
-        Papa.parse(csvData, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(results) {
-            // Limpieza: Filtrar filas sin datos relevantes para evitar objetos vacíos
-            productsData = results.data.filter(row => row.producto && row.bodega);
-            loadingElem.classList.add('hidden');
-            resultElem.textContent = 'Escanea un código QR para ver los productos de la bodega';
-            console.log('Datos cargados:', productsData);
-          },
-          error: function(error) {
-            console.error('Error al cargar datos:', error);
-            loadingElem.classList.add('hidden');
-            resultElem.textContent = 'Error al cargar los datos. Intenta recargar la página.';
-          }
-        });
-      } catch (error) {
-        console.error('Error:', error);
-        loadingElem.classList.add('hidden');
-        resultElem.textContent = 'Error al cargar los datos. Intenta recargar la página.';
-      }
-    }
-
-    function startScanner() {
-      scannerContainer.classList.remove('hidden');
-      startBtn.classList.add('hidden');
-      productsContainer.classList.add('hidden');
-      resultElem.textContent = 'Apunta la cámara hacia un código QR.';
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(function(stream) {
-          videoStream = stream;
-          video.srcObject = stream;
-          video.classList.remove('hidden');
-          canvas.classList.remove('hidden');
-          video.play();
-
-          requestAnimationFrame(tick);
-        })
-        .catch(function(err) {
-          console.error("Error al acceder a la cámara:", err);
-          resultElem.textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
-          stopScanner();
-        });
-    }
-
-    function stopScanner() {
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-      }
-
-      scannerContainer.classList.add('hidden');
-      startBtn.classList.remove('hidden');
-      video.classList.add('hidden');
-      canvas.classList.add('hidden');
-      productsContainer.classList.add('hidden');
-      resultElem.textContent = 'Escanea un código QR para ver los productos de la bodega';
-    }
-
-    function tick() {
-      if (!videoStream) return; // Por si el stream fue detenido
-
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "attemptBoth",
-        });
-
-        if (code) {
-          // Dibujar cuadro alrededor del código QR detectado
-          drawLine(code.location.topLeftCorner, code.location.topRightCorner);
-          drawLine(code.location.topRightCorner, code.location.bottomRightCorner);
-          drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner);
-          drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner);
-
-          handleQRCode(code.data);
-          stopScanner();
-          return;
+  
+    <div id="result">Escanea un código QR para ver los productos de la bodega</div>
+  
+    <div id="loading" class="loading hidden">
+      <p>Cargando datos...</p>
+    </div>
+  
+    <div id="products-container" class="hidden">
+      <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
+      <table id="products-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Bodega</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+        <tbody id="products-body"></tbody>
+      </table>
+    </div>
+  
+    <script>
+      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT021U2WLy4t8F9H-4ZafrFYTo7evHnbYHvipI0TTPlUKN5T3Puo66S5Lrcg7hlgTZGNE9V9RkXxfWO/pub?gid=1497613061&single=true&output=csv';
+  
+      let productsData = [];
+      let videoStream = null;
+      let scanning = false;    // Controla si el escáner está activo
+      let animationFrameId = null;
+  
+      document.getElementById('startScanner').addEventListener('click', startScanner);
+      document.getElementById('stopScanner').addEventListener('click', stopScanner);
+  
+      window.addEventListener('DOMContentLoaded', () => {
+        loadData();
+      });
+  
+      async function loadData() {
+        document.getElementById('loading').classList.remove('hidden');
+  
+        try {
+          const response = await fetch(SHEET_URL);
+          const csvData = await response.text();
+  
+          Papa.parse(csvData, {
+            header: true,
+            complete: function(results) {
+              productsData = results.data;
+              document.getElementById('loading').classList.add('hidden');
+              console.log('Datos cargados:', productsData);
+            },
+            error: function(error) {
+              console.error('Error al cargar datos:', error);
+              document.getElementById('loading').classList.add('hidden');
+              document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+            }
+          });
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
         }
       }
-
-      requestAnimationFrame(tick);
-    }
-
-    function drawLine(begin, end) {
-      canvasContext.beginPath();
-      canvasContext.moveTo(begin.x, begin.y);
-      canvasContext.lineTo(end.x, end.y);
-      canvasContext.lineWidth = 4;
-      canvasContext.strokeStyle = "#FF3B58";
-      canvasContext.stroke();
-    }
-
-    function handleQRCode(data) {
-      // Asumimos que el QR contiene el nombre exacto de la bodega o una clave que coincida con "bodega" en CSV
-      const bodegaEscaneada = data.trim().toLowerCase();
-
-      // Filtrar productos que coincidan con la bodega (ignorando mayúsculas/minúsculas)
-      const productosFiltrados = productsData.filter(p => p.bodega && p.bodega.toLowerCase() === bodegaEscaneada);
-
-      if (productosFiltrados.length === 0) {
-        resultElem.textContent = `No se encontraron productos para la bodega: "${data}".`;
-        productsContainer.classList.add('hidden');
-        return;
+  
+      function startScanner() {
+        if (scanning) return;  // No iniciar si ya está escaneando
+        scanning = true;
+  
+        const scannerContainer = document.getElementById('scannerContainer');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('scanner');
+  
+        scannerContainer.classList.remove('hidden');
+        document.getElementById('startScanner').classList.add('hidden');
+  
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+          .then(function(stream) {
+            videoStream = stream;
+            video.srcObject = stream;
+            video.play();
+            video.classList.add('hidden'); // Ocultamos el video para usar solo canvas
+  
+            // Mostrar canvas y preparar tamaño
+            canvas.classList.remove('hidden');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+  
+            tick();  // Iniciar loop de escaneo
+          })
+          .catch(function(err) {
+            scanning = false;
+            console.error("Error al acceder a la cámara:", err);
+            document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
+            document.getElementById('scannerContainer').classList.add('hidden');
+            document.getElementById('startScanner').classList.remove('hidden');
+          });
       }
-
-      bodegaNameElem.textContent = data;
-      productsBody.innerHTML = ''; // Limpiar tabla
-
-      productosFiltrados.forEach(producto => {
-        const tr = document.createElement('tr');
-
-        const tdProducto = document.createElement('td');
-        tdProducto.textContent = producto.producto || 'N/D';
-
-        const tdBodega = document.createElement('td');
-        tdBodega.textContent = producto.bodega || 'N/D';
-
-        const tdPrecio = document.createElement('td');
-        tdPrecio.textContent = producto.precio ? `$${producto.precio}` : 'N/D';
-
-        tr.appendChild(tdProducto);
-        tr.appendChild(tdBodega);
-        tr.appendChild(tdPrecio);
-
-        productsBody.appendChild(tr);
-      });
-
-      productsContainer.classList.remove('hidden');
-      resultElem.textContent = `Productos encontrados para la bodega: "${data}".`;
-    }
-  </script>
+  
+      function stopScanner() {
+        if (!scanning) return;
+        scanning = false;
+  
+        if (videoStream) {
+          videoStream.getTracks().forEach(track => track.stop());
+          videoStream = null;
+        }
+  
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+  
+        document.getElementById('scannerContainer').classList.add('hidden');
+        document.getElementById('startScanner').classList.remove('hidden');
+        document.getElementById('video').classList.add('hidden');
+        document.getElementById('scanner').classList.add('hidden');
+        document.getElementById('products-container').classList.add('hidden');
+        document.getElementById('result').textContent = 'Escanea un código QR para ver los productos de la bodega';
+      }
+  
+      function tick() {
+        if (!scanning) return;
+  
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('scanner');
+        const ctx = canvas.getContext('2d');
+  
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+  
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "attemptBoth",
+          });
+  
+          if (code) {
+            // Dibuja un rectángulo rojo alrededor del código QR detectado
+            drawLine(ctx, code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+            drawLine(ctx, code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+            drawLine(ctx, code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+            drawLine(ctx, code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+  
+            showProductsForBodega(code.data);
+            stopScanner();
+            return;
+          }
+        }
+        animationFrameId = requestAnimationFrame(tick);
+      }
+  
+      function drawLine(ctx, begin, end, color) {
+        ctx.beginPath();
+        ctx.moveTo(begin.x, begin.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+      }
+  
+      function showProductsForBodega(bodega) {
+        const filtered = productsData.filter(p => p.bodega && p.bodega.trim().toLowerCase() === bodega.trim().toLowerCase());
+  
+        const productsContainer = document.getElementById('products-container');
+        const productsBody = document.getElementById('products-body');
+        const bodegaNameElem = document.getElementById('bodega-name');
+        const resultElem = document.getElementById('result');
+  
+        if (filtered.length === 0) {
+          resultElem.textContent = `No se encontraron productos para la bodega "${bodega}".`;
+          productsContainer.classList.add('hidden');
+          return;
+        }
+  
+        bodegaNameElem.textContent = bodega;
+        productsBody.innerHTML = '';
+  
+        filtered.forEach(product => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${product.producto || '-'}</td>
+            <td>${product.bodega || '-'}</td>
+            <td>$${product.precio || '-'}</td>
+          `;
+          productsBody.appendChild(tr);
+        });
+  
+        productsContainer.classList.remove('hidden');
+        resultElem.textContent = `Productos encontrados para la bodega "${bodega}":`;
+      }
+    </script>
 </body>
 </html>
