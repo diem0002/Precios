@@ -2,109 +2,101 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Consulta de Bodegas</title>
+  <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/x-icon">
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
-    :root {
-      --primary: #6a1b9a;
-      --primary-dark: #4a148c;
-      --light-bg: #f3e5f5;
-      --text: #333;
-      --white: #fff;
-    }
-
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--light-bg);
-      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #2c003e;
+      color: #f3e9ff;
       margin: 0;
       padding: 0 15px;
     }
 
     header {
       text-align: center;
-      padding: 20px 0;
+      padding: 20px;
     }
 
-    .logo {
-      max-width: 120px;
-      display: block;
-      margin: 0 auto 10px;
+    header img {
+      width: 120px;
+      margin-bottom: 10px;
     }
 
     h1 {
-      font-size: 1.8rem;
-      color: var(--primary-dark);
-      margin: 0;
-    }
-
-    .btn {
-      background-color: var(--primary);
-      color: var(--white);
-      padding: 10px 15px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 10px 5px 0;
-      font-size: 1rem;
-      transition: background 0.3s ease;
-    }
-
-    .btn:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .btn-scan {
-      background-color: #7b1fa2;
+      color: #a259ff;
+      font-size: 1.8em;
+      margin-bottom: 10px;
     }
 
     .scanner-container {
-      width: 100%;
       max-width: 400px;
       margin: 20px auto;
       position: relative;
-      text-align: center;
     }
 
     #scanner {
       width: 100%;
-      border: 2px solid var(--primary);
+      border: 2px solid #a259ff;
     }
 
     #result {
+      background-color: #3f0d57;
       margin: 20px auto;
-      padding: 10px;
-      border: 1px solid #ccc;
-      background-color: #fff;
-      min-height: 50px;
-      text-align: center;
-      border-radius: 5px;
+      padding: 15px;
+      border-radius: 8px;
       max-width: 600px;
+      text-align: center;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      background-color: #fff;
     }
 
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #a259ff;
       padding: 10px;
       text-align: left;
-      font-size: 0.95rem;
     }
 
     th {
-      background-color: var(--primary);
-      color: var(--white);
+      background-color: #5e0b7a;
+      color: #fff;
+    }
+
+    td {
+      background-color: #3f0d57;
     }
 
     .hidden {
       display: none;
+    }
+
+    .btn {
+      background-color: #5e0b7a;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px auto;
+      display: block;
+      font-size: 1em;
+    }
+
+    .btn-scan {
+      background-color: #a259ff;
+      color: #2c003e;
+    }
+
+    .btn:hover {
+      opacity: 0.85;
     }
 
     .loading {
@@ -112,36 +104,29 @@
       padding: 20px;
     }
 
-    #products-container {
-      margin-top: 30px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
     @media (max-width: 600px) {
+      table, th, td {
+        font-size: 0.9em;
+      }
+
       h1 {
-        font-size: 1.4rem;
+        font-size: 1.5em;
       }
 
       .btn {
         width: 100%;
-        margin: 10px 0;
-      }
-
-      th, td {
-        font-size: 0.85rem;
       }
     }
   </style>
 </head>
 <body>
+
   <header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Wine_icon.svg" alt="Logo Vinoteca" class="logo">
+    <img src="img/compañia de vinos logos-03.png" alt="Logo de la vinoteca">
     <h1>Consulta de Productos por Bodega</h1>
   </header>
 
-  <div id="scanner-section" class="scanner-container">
+  <div id="scanner-section">
     <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
     <div class="scanner-container hidden" id="scannerContainer">
       <canvas id="scanner" class="hidden"></canvas>
@@ -172,7 +157,7 @@
 
   <script>
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT021U2WLy4t8F9H-4ZafrFYTo7evHnbYHvipI0TTPlUKN5T3Puo66S5Lrcg7hlgTZGNE9V9RkXxfWO/pub?gid=1497613061&single=true&output=csv';
-
+    
     let productsData = [];
     let videoStream = null;
 
@@ -185,7 +170,6 @@
 
     async function loadData() {
       document.getElementById('loading').classList.remove('hidden');
-
       try {
         const response = await fetch(SHEET_URL);
         const csvData = await response.text();
@@ -195,6 +179,7 @@
           complete: function(results) {
             productsData = results.data;
             document.getElementById('loading').classList.add('hidden');
+            console.log('Datos cargados:', productsData);
           },
           error: function(error) {
             console.error('Error al cargar datos:', error);
@@ -222,7 +207,6 @@
           video.srcObject = stream;
           video.classList.remove('hidden');
           video.play();
-
           requestAnimationFrame(tick);
         })
         .catch(function(err) {
@@ -236,7 +220,6 @@
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
       }
-
       document.getElementById('scannerContainer').classList.add('hidden');
       document.getElementById('startScanner').classList.remove('hidden');
       document.getElementById('video').classList.add('hidden');
