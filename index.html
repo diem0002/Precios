@@ -4,19 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Consulta de Bodegas</title>
-  <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/x-icon" />
-
-  <!-- Estilos externos -->
-  <link rel="stylesheet" href="css/styles.css" />
-
-  <!-- Librerías externas -->
+  <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
-  <img src="img/compañia de vinos logos-03.png" alt="Logo de la vinoteca" class="logo" />
+  <img src="img/compañia de vinos logos-03.png" alt="Logo de la vinoteca" class="logo">
   <h1>Consulta de Productos por Bodega</h1>
 
+  <!-- Escáner QR -->
   <div id="scanner-section">
     <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
     <div class="scanner-container hidden" id="scannerContainer">
@@ -26,12 +23,24 @@
     </div>
   </div>
 
-  <div id="result">Escanea un código QR para ver los productos de la bodega</div>
+  <!-- Input alternativo -->
+  <div id="manual-search">
+    <button id="toggleManualInput" class="btn">Buscar Bodega Manualmente</button>
+    <div id="manualInputContainer" class="hidden">
+      <input type="text" id="manualBodegaInput" placeholder="Escribí el nombre de la bodega" class="input-text">
+      <button id="manualSearchBtn" class="btn">Buscar</button>
+    </div>
+  </div>
 
+  <!-- Resultado -->
+  <div id="result">Escanea un código QR o buscá manualmente para ver los productos</div>
+
+  <!-- Loading -->
   <div id="loading" class="loading hidden">
     <p>Cargando datos...</p>
   </div>
 
+  <!-- Tabla -->
   <div id="products-container" class="hidden">
     <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
     <table id="products-table">
@@ -43,12 +52,11 @@
         </tr>
       </thead>
       <tbody id="products-body">
-        <!-- Los productos se insertarán aquí -->
+        <!-- Productos insertados dinámicamente -->
       </tbody>
     </table>
   </div>
 
-  <!-- Script JS externo -->
-  <script src="js/main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

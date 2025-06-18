@@ -122,3 +122,44 @@ function showProducts(bodegaName) {
 
   document.getElementById('products-container').classList.remove('hidden');
 }
+
+// Historial en memoria
+const scanHistory = [];
+
+// Mostrar u ocultar input manual
+document.getElementById('toggleManualSearch').addEventListener('click', () => {
+    document.getElementById('manualSearchContainer').classList.toggle('hidden');
+});
+
+// Buscar desde input manual
+document.getElementById('manualSearchBtn').addEventListener('click', () => {
+    const input = document.getElementById('manualInput');
+    const bodega = input.value.trim();
+    if (bodega) {
+        showProducts(bodega);
+        updateHistory(bodega);
+        input.value = '';
+    }
+});
+
+// Agregar al historial (sin repetir)
+function updateHistory(bodega) {
+    if (!scanHistory.includes(bodega)) {
+        scanHistory.unshift(bodega);
+        if (scanHistory.length > 5) scanHistory.pop(); // Solo los últimos 5
+        renderHistory();
+    }
+}
+
+// Renderizar historial
+function renderHistory() {
+    const container = document.getElementById('historyContainer');
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+    scanHistory.forEach(name => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        list.appendChild(li);
+    });
+    container.classList.remove('hidden');
+}
