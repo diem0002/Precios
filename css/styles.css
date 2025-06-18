@@ -175,26 +175,26 @@ th {
   }
 }
 .manual-input {
-  padding: 10px;
-  border: 2px solid var(--cosmic-2);
-  border-radius: 10px;
-  margin-right: 10px;
-  width: 70%;
-  max-width: 300px;
-  font-size: 1rem;
-  background-color: white;
-  color: var(--cosmic-2);
-  margin-top: 10px;
+padding: 10px;
+border: 2px solid var(--cosmic-2);
+border-radius: 10px;
+margin-right: 10px;
+width: 70%;
+max-width: 300px;
+font-size: 1rem;
+background-color: white;
+color: var(--cosmic-2);
+margin-top: 10px;
 }
 #historyList {
-  list-style: none;
-  padding-left: 0;
-  margin-top: 10px;
+list-style: none;
+padding-left: 0;
+margin-top: 10px;
 }
 #historyList li {
-  background: var(--mountbatten-pink-1);
-  padding: 6px 12px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-  box-shadow: 0 0 3px var(--cosmic-2);
+background: var(--mountbatten-pink-1);
+padding: 6px 12px;
+border-radius: 8px;
+margin-bottom: 4px;
+box-shadow: 0 0 3px var(--cosmic-2);
 }
