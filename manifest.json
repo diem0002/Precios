@@ -1,8 +1,9 @@
+    
 {
   "name": "Consulta Bodegas",
   "short_name": "Bodegas",
   "description": "Aplicación de consulta de productos por bodega",
-  "start_url": "/?source=pwa",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#dccdd5",
   "theme_color": "#682854",
