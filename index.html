@@ -1,22 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script>
-    // Redirección mejorada para GitHub Pages
-    if (sessionStorage.redirect) {
-      const redirect = sessionStorage.redirect;
-      delete sessionStorage.redirect;
-      window.location.href = window.location.pathname.replace(/\/$/, '') + '/index.html' + window.location.search + window.location.hash;
-    }
-  </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#682854">
-  <title>Consulta de Bodegas</title>
-  <link rel="icon" href="./img/icon.png" type="image/png">
-  <link rel="apple-touch-icon" href="./img/icon-192.png">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#682854">
+    <title>Consulta de Bodegas</title>
+    <link rel="icon" href="img/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="img/icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>

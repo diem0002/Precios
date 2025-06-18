@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Redireccionando...</title>
-  <script>
-    // Redirección específica para GitHub Pages
-    const path = window.location.pathname.split('/');
-    const repoName = path[1] ? path[1] : '';
-    const basePath = repoName ? `/${repoName}/` : '/';
-    sessionStorage.redirect = window.location.href;
-    window.location.href = basePath + 'index.html' + window.location.search + window.location.hash;
-  </script>
+    <meta charset="utf-8">
+    <title>Redireccionando...</title>
+    <script>
+        // Redirección específica para tu repositorio /Precios/
+        const path = window.location.pathname;
+        const isPreciosRepo = path.includes('/Precios/');
+        const basePath = isPreciosRepo ? '/Precios/' : '/';
+        window.location.href = basePath + 'index.html' + window.location.search + window.location.hash;
+    </script>
 </head>
 <body>
-  <p>Redireccionando... <a href="index.html">Click aquí si no funciona</a></p>
+    <p>Redireccionando... <a href="index.html">Haz clic aquí si no funciona</a></p>
 </body>
 </html>
