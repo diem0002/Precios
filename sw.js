@@ -1,38 +1,50 @@
-const CACHE_NAME = 'bodegas-ui-' + new Date().toISOString().slice(0,10); // Cache diario solo para UI
-
+const CACHE_NAME = 'bodegas-ui-v3';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/main.js',
-  '/js/sw-register.js',
-  '/img/icon.png',
-  '/img/icon-192.png'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/main.js',
+  './js/sw-register.js',
+  './img/icon.png',
+  './img/icon-192.png',
+  './404.html',
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Forzar actualización
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        return cache.addAll(ASSETS);
+      })
   );
 });
 
 self.addEventListener('fetch', event => {
-  // Nunca cachear datos dinámicos
+  // No cachear la hoja de cálculo
   if (event.request.url.includes('spreadsheets')) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  // Para otros recursos, usar estrategia Cache First
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request))
+      .then(response => {
+        return response || fetch(event.request)
+          .then(fetchResponse => {
+            // Cachear solo assets estáticos
+            if (ASSETS.some(asset => event.request.url.includes(asset))) {
+              const responseClone = fetchResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, responseClone));
+            }
+            return fetchResponse;
+          });
+      })
   );
 });
 
-// Limpiar caches viejos
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {

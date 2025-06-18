@@ -1,9 +1,14 @@
-// Registrar Service Worker para PWA
+// Registrar Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
       .then(registration => {
         console.log('ServiceWorker registrado con éxito:', registration.scope);
+        
+        // Verificar actualizaciones cada hora
+        setInterval(() => {
+          registration.update();
+        }, 60 * 60 * 1000);
       })
       .catch(err => {
         console.log('Error al registrar ServiceWorker:', err);
@@ -11,13 +16,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Mostrar prompt de instalación
+// Manejar instalación PWA
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   
-  // Mostrar botón de instalación
   const installBtn = document.createElement('button');
   installBtn.id = 'installBtn';
   installBtn.className = 'btn';
@@ -25,7 +29,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
   installBtn.style.margin = '10px auto';
   installBtn.style.display = 'block';
   
-  document.querySelector('h1').after(installBtn);
+  if (document.querySelector('h1')) {
+    document.querySelector('h1').after(installBtn);
+  }
   
   installBtn.addEventListener('click', () => {
     installBtn.style.display = 'none';

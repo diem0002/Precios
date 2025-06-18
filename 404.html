@@ -4,11 +4,15 @@
   <meta charset="utf-8">
   <title>Redireccionando...</title>
   <script>
-    sessionStorage.redirect = location.href;
-    window.location.replace('/index.html');
+    // Redirección específica para GitHub Pages
+    const path = window.location.pathname.split('/');
+    const repoName = path[1] ? path[1] : '';
+    const basePath = repoName ? `/${repoName}/` : '/';
+    sessionStorage.redirect = window.location.href;
+    window.location.href = basePath + 'index.html' + window.location.search + window.location.hash;
   </script>
 </head>
 <body>
-  <p>Redireccionando... <a href="/index.html">Click aquí si no funciona</a></p>
+  <p>Redireccionando... <a href="index.html">Click aquí si no funciona</a></p>
 </body>
 </html>

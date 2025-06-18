@@ -48,7 +48,6 @@ async function loadData() {
         document.getElementById('loading').classList.add('hidden');
         showConnectionStatus(false);
         updateLastUpdateTime();
-        console.log('Datos actualizados correctamente');
       },
       error: function(error) {
         console.error('Error al parsear datos:', error);
@@ -64,9 +63,7 @@ async function loadData() {
 
 function updateLastUpdateTime() {
   const now = new Date();
-  const timeString = now.toLocaleTimeString();
-  const dateString = now.toLocaleDateString();
-  document.getElementById('last-update-time').textContent = `${dateString} ${timeString}`;
+  document.getElementById('last-update-time').textContent = now.toLocaleString();
 }
 
 function handleDataError() {
@@ -75,11 +72,8 @@ function handleDataError() {
   document.getElementById('result').textContent = 'Error al cargar datos. Reconectando...';
   
   // Reintentar después de 5 segundos
-  setTimeout(() => {
-    loadData();
-  }, 5000);
+  setTimeout(loadData, 5000);
 }
-
 // Funciones del escáner QR
 function startScanner() {
   const scannerContainer = document.getElementById('scannerContainer');
