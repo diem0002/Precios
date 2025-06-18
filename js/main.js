@@ -112,25 +112,57 @@ function toggleManualSearch() {
 
 function manualSearch() {
   const input = document.getElementById('manualBodegaInput');
-  const bodega = input.value.trim();
+  const searchTerm = input.value.trim();
   
-  if (bodega) {
-    showProducts(bodega);
-    updateHistory(bodega);
-    input.value = '';
-    document.getElementById('manualInputContainer').classList.add('hidden');
+  if (searchTerm) {
+    const foundBodega = findBodega(searchTerm);
+    if (foundBodega) {
+      showProducts(foundBodega);
+      updateHistory(foundBodega);
+      input.value = '';
+      document.getElementById('manualInputContainer').classList.add('hidden');
+    } else {
+      document.getElementById('result').textContent = 'No se encontró la bodega. Intenta con otro nombre.';
+    }
   } else {
     document.getElementById('result').textContent = 'Por favor ingresa un nombre de bodega';
   }
 }
 
+// Función mejorada para encontrar bodegas
+function findBodega(searchTerm) {
+  if (!productsData.length) return null;
+  
+  const searchTermLower = searchTerm.toLowerCase().trim();
+  
+  // Primero buscar coincidencia exacta (insensible a mayúsculas)
+  let exactMatch = productsData.find(product => 
+    product.Bodega && product.Bodega.toLowerCase().trim() === searchTermLower
+  );
+  
+  if (exactMatch) return exactMatch.Bodega;
+  
+  // Si no hay coincidencia exacta, buscar parcial
+  const partialMatches = productsData.filter(product => 
+    product.Bodega && product.Bodega.toLowerCase().includes(searchTermLower)
+  );
+  
+  if (partialMatches.length > 0) {
+    // Devolver el nombre canónico de la primera bodega que coincida
+    return partialMatches[0].Bodega;
+  }
+  
+  return null;
+}
+
 // Mostrar productos
 function showProducts(bodegaName) {
+  const normalizedBodegaName = bodegaName.trim().toLowerCase();
   document.getElementById('bodega-name').textContent = bodegaName;
   document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
 
   const filteredProducts = productsData.filter(product =>
-    product.Bodega && product.Bodega.trim().toLowerCase() === bodegaName.trim().toLowerCase()
+    product.Bodega && product.Bodega.trim().toLowerCase() === normalizedBodegaName
   );
 
   const productsBody = document.getElementById('products-body');
@@ -155,8 +187,9 @@ function showProducts(bodegaName) {
 
 // Historial de búsquedas
 function updateHistory(bodega) {
-  if (!scanHistory.includes(bodega)) {
-    scanHistory.unshift(bodega);
+  const normalizedBodega = bodega.trim();
+  if (!scanHistory.some(item => item.trim() === normalizedBodega)) {
+    scanHistory.unshift(normalizedBodega);
     if (scanHistory.length > 5) scanHistory.pop();
     renderHistory();
   }
