@@ -4,6 +4,17 @@ let productsData = [];
 let videoStream = null;
 const scanHistory = [];
 
+// Mostrar estado de conexión
+function showConnectionStatus(connecting) {
+  const statusElement = document.getElementById('connection-status');
+  if (connecting) {
+    statusElement.classList.remove('hidden');
+    statusElement.innerHTML = '<p>Conectando al servidor para obtener datos actualizados...</p>';
+  } else {
+    statusElement.classList.add('hidden');
+  }
+}
+
 // Cargar datos al iniciar
 window.addEventListener('DOMContentLoaded', () => {
   loadData();
@@ -16,30 +27,57 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadData() {
+  showConnectionStatus(true);
   document.getElementById('loading').classList.remove('hidden');
 
   try {
-    const response = await fetch(SHEET_URL);
+    // Forzar actualización añadiendo timestamp
+    const timestamp = new Date().getTime();
+    const response = await fetch(`${SHEET_URL}&timestamp=${timestamp}`);
+    
+    // Verificar si la respuesta es válida
+    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+    
     const csvData = await response.text();
-
+    
+    // Procesar datos
     Papa.parse(csvData, {
       header: true,
-      complete: function (results) {
+      complete: function(results) {
         productsData = results.data;
         document.getElementById('loading').classList.add('hidden');
-        console.log('Datos cargados:', productsData);
+        showConnectionStatus(false);
+        updateLastUpdateTime();
+        console.log('Datos actualizados correctamente');
       },
-      error: function (error) {
-        console.error('Error al cargar datos:', error);
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+      error: function(error) {
+        console.error('Error al parsear datos:', error);
+        handleDataError();
       }
     });
+    
   } catch (error) {
-    console.error('Error:', error);
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('result').textContent = 'Error al cargar los datos. Intenta recargar la página.';
+    console.error('Error al cargar datos:', error);
+    handleDataError();
   }
+}
+
+function updateLastUpdateTime() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  const dateString = now.toLocaleDateString();
+  document.getElementById('last-update-time').textContent = `${dateString} ${timeString}`;
+}
+
+function handleDataError() {
+  document.getElementById('loading').classList.add('hidden');
+  showConnectionStatus(true);
+  document.getElementById('result').textContent = 'Error al cargar datos. Reconectando...';
+  
+  // Reintentar después de 5 segundos
+  setTimeout(() => {
+    loadData();
+  }, 5000);
 }
 
 // Funciones del escáner QR
@@ -183,9 +221,10 @@ function showProducts(bodegaName) {
   }
 
   document.getElementById('products-container').classList.remove('hidden');
+  updateLastUpdateTime();
 }
 
-// Historial de búsquedas
+// Historial de búsquedas (solo en memoria durante la sesión)
 function updateHistory(bodega) {
   const normalizedBodega = bodega.trim();
   if (!scanHistory.some(item => item.trim() === normalizedBodega)) {

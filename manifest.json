@@ -1,0 +1,23 @@
+{
+  "name": "Consulta Bodegas",
+  "short_name": "Bodegas",
+  "description": "Aplicación de consulta de productos por bodega",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#dccdd5",
+  "theme_color": "#682854",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "img/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
