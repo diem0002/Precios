@@ -2,12 +2,17 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5JA7l3_7kg8
 
 let productsData = [];
 let videoStream = null;
+const scanHistory = [];
 
-document.getElementById('startScanner').addEventListener('click', startScanner);
-document.getElementById('stopScanner').addEventListener('click', stopScanner);
-
+// Cargar datos al iniciar
 window.addEventListener('DOMContentLoaded', () => {
   loadData();
+  
+  // Configurar event listeners
+  document.getElementById('startScanner').addEventListener('click', startScanner);
+  document.getElementById('stopScanner').addEventListener('click', stopScanner);
+  document.getElementById('toggleManualSearch').addEventListener('click', toggleManualSearch);
+  document.getElementById('manualSearchBtn').addEventListener('click', manualSearch);
 });
 
 async function loadData() {
@@ -37,6 +42,7 @@ async function loadData() {
   }
 }
 
+// Funciones del escáner QR
 function startScanner() {
   const scannerContainer = document.getElementById('scannerContainer');
   const video = document.getElementById('video');
@@ -89,12 +95,36 @@ function tick() {
     if (code) {
       stopScanner();
       showProducts(code.data);
+      updateHistory(code.data);
     }
   }
 
   requestAnimationFrame(tick);
 }
 
+// Funciones de búsqueda manual
+function toggleManualSearch() {
+  document.getElementById('manualInputContainer').classList.toggle('hidden');
+  if (!document.getElementById('manualInputContainer').classList.contains('hidden')) {
+    document.getElementById('manualBodegaInput').focus();
+  }
+}
+
+function manualSearch() {
+  const input = document.getElementById('manualBodegaInput');
+  const bodega = input.value.trim();
+  
+  if (bodega) {
+    showProducts(bodega);
+    updateHistory(bodega);
+    input.value = '';
+    document.getElementById('manualInputContainer').classList.add('hidden');
+  } else {
+    document.getElementById('result').textContent = 'Por favor ingresa un nombre de bodega';
+  }
+}
+
+// Mostrar productos
 function showProducts(bodegaName) {
   document.getElementById('bodega-name').textContent = bodegaName;
   document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
@@ -123,43 +153,32 @@ function showProducts(bodegaName) {
   document.getElementById('products-container').classList.remove('hidden');
 }
 
-// Historial en memoria
-const scanHistory = [];
-
-// Mostrar u ocultar input manual
-document.getElementById('toggleManualSearch').addEventListener('click', () => {
-    document.getElementById('manualSearchContainer').classList.toggle('hidden');
-});
-
-// Buscar desde input manual
-document.getElementById('manualSearchBtn').addEventListener('click', () => {
-    const input = document.getElementById('manualInput');
-    const bodega = input.value.trim();
-    if (bodega) {
-        showProducts(bodega);
-        updateHistory(bodega);
-        input.value = '';
-    }
-});
-
-// Agregar al historial (sin repetir)
+// Historial de búsquedas
 function updateHistory(bodega) {
-    if (!scanHistory.includes(bodega)) {
-        scanHistory.unshift(bodega);
-        if (scanHistory.length > 5) scanHistory.pop(); // Solo los últimos 5
-        renderHistory();
-    }
+  if (!scanHistory.includes(bodega)) {
+    scanHistory.unshift(bodega);
+    if (scanHistory.length > 5) scanHistory.pop();
+    renderHistory();
+  }
 }
 
-// Renderizar historial
 function renderHistory() {
-    const container = document.getElementById('historyContainer');
-    const list = document.getElementById('historyList');
-    list.innerHTML = '';
-    scanHistory.forEach(name => {
-        const li = document.createElement('li');
-        li.textContent = name;
-        list.appendChild(li);
+  const container = document.getElementById('historyContainer');
+  const list = document.getElementById('historyList');
+  
+  list.innerHTML = '';
+  scanHistory.forEach(name => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    li.addEventListener('click', () => {
+      document.getElementById('manualBodegaInput').value = name;
+      showProducts(name);
+      document.getElementById('manualInputContainer').classList.add('hidden');
     });
+    list.appendChild(li);
+  });
+  
+  if (scanHistory.length > 0) {
     container.classList.remove('hidden');
+  }
 }
