@@ -4,18 +4,11 @@
   <meta charset="utf-8">
   <title>Redireccionando...</title>
   <script>
-    // Redireccionar a index.html manteniendo la ruta
-    const segment = 1;
-    const loc = window.location;
-    window.location.replace(
-      loc.pathname.split('/').slice(0, 1 + segment).join('/') + 
-      '/index.html' + 
-      loc.search + 
-      loc.hash
-    );
+    sessionStorage.redirect = location.href;
+    window.location.replace('/index.html');
   </script>
 </head>
 <body>
-  <p>Si no eres redirigido automáticamente, <a href="/index.html">haz clic aquí</a>.</p>
+  <p>Redireccionando... <a href="/index.html">Click aquí si no funciona</a></p>
 </body>
 </html>
