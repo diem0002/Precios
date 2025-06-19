@@ -103,12 +103,7 @@ table {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 15px var(--cosmic-2);
-}
-
-td:nth-child(3),
-th:nth-child(3) {
-  min-width: 120px;
-  text-align: right;
+  table-layout: fixed; /* agregado */
 }
 
 th,
@@ -124,6 +119,26 @@ th {
   background-color: var(--finn);
   font-weight: 700;
   letter-spacing: 0.05em;
+  white-space: nowrap;        /* agregado */
+  overflow: hidden;           /* agregado */
+  text-overflow: ellipsis;    /* agregado */
+}
+
+/* Anchos fijos por columna */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 40%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 40%;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 20%;
+  text-align: right;
 }
 
 .btn {
