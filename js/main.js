@@ -29,6 +29,20 @@ document.querySelectorAll('.price-filter').forEach(btn => {
   });
 });
 
+  // Filtros por precio
+  document.getElementById('btn-filter-1').addEventListener('click', () => {
+    showRandomProductsByPrice(0, 4999);
+  });
+
+  document.getElementById('btn-filter-2').addEventListener('click', () => {
+    showRandomProductsByPrice(5000, 15000);
+  });
+
+  document.getElementById('btn-filter-3').addEventListener('click', () => {
+    showRandomProductsByPrice(15001, Infinity);
+  });
+
+
 function normalize(text) {
   return text
     ?.toString()
