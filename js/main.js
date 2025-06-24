@@ -32,9 +32,9 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
   const filtered = productsData.filter(product => {
-    const precio = parseInt(product.Precio?.replace(/\D/g, '')); // Elimina $ y puntos
-    return !isNaN(precio) && precio >= minPrice && precio <= maxPrice;
-  });
+  const precio = parseInt(product.Precio?.replace(/\D/g, ''));
+  return !isNaN(precio) && precio > 0 && precio >= minPrice && precio <= maxPrice;
+});
 
   const shuffled = filtered.sort(() => 0.5 - Math.random()); // Mezcla aleatoria
   const selected = shuffled.slice(0, 10);
