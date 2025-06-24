@@ -87,7 +87,9 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     '9 de oro',
     'Doña chola',
     'Cajas y canastas para vino',
-    'Gaseosas y jugos'
+    'Gaseosas y jugos',
+    'Valle calchaquies',
+    
    
 
   ].map(normalize); // normaliza todos los nombres excluidos
