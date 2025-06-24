@@ -253,6 +253,8 @@ function toggleManualSearch() {
   document.getElementById('manualInputContainer').classList.toggle('hidden');
   if (!document.getElementById('manualInputContainer').classList.contains('hidden')) {
     document.getElementById('manualBodegaInput').focus();
+    // Cambiamos el placeholder para que sea más claro
+    document.getElementById('manualBodegaInput').placeholder = "Escribí el nombre del producto";
   }
 }
 
@@ -261,44 +263,69 @@ function manualSearch() {
   const searchTerm = input.value.trim();
   
   if (searchTerm) {
-    const foundBodega = findBodega(searchTerm);
-    if (foundBodega) {
-      showProducts(foundBodega);
-      updateHistory(foundBodega);
+    const foundProducts = findProducts(searchTerm);
+    if (foundProducts.length > 0) {
+      showProductsBySearch(foundProducts);
+      updateHistory(searchTerm);
       input.value = '';
       document.getElementById('manualInputContainer').classList.add('hidden');
     } else {
-      document.getElementById('result').textContent = 'No se encontró la bodega. Intenta con otro nombre.';
+      document.getElementById('result').textContent = 'No se encontraron productos. Intenta con otro nombre.';
     }
   } else {
-    document.getElementById('result').textContent = 'Por favor ingresa un nombre de bodega';
+    document.getElementById('result').textContent = 'Por favor ingresa un nombre de producto';
   }
 }
 
-// Función mejorada para encontrar bodegas
-function findBodega(searchTerm) {
-  if (!productsData.length) return null;
+// Nueva función para buscar productos
+function findProducts(searchTerm) {
+  if (!productsData.length) return [];
   
   const searchTermLower = searchTerm.toLowerCase().trim();
   
-  // Primero buscar coincidencia exacta (insensible a mayúsculas)
-  let exactMatch = productsData.find(product => 
-    product.Bodega && product.Bodega.toLowerCase().trim() === searchTermLower
-  );
-  
-  if (exactMatch) return exactMatch.Bodega;
-  
-  // Si no hay coincidencia exacta, buscar parcial
-  const partialMatches = productsData.filter(product => 
-    product.Bodega && product.Bodega.toLowerCase().includes(searchTermLower)
-  );
-  
-  if (partialMatches.length > 0) {
-    // Devolver el nombre canónico de la primera bodega que coincida
-    return partialMatches[0].Bodega;
+  return productsData.filter(product => {
+    const productName = product.Producto?.toLowerCase() || '';
+    const bodegaName = product.Bodega?.toLowerCase() || '';
+    
+    // Busca en nombre de producto O en bodega
+    return productName.includes(searchTermLower) || bodegaName.includes(searchTermLower);
+  });
+}
+
+// Nueva función para mostrar resultados de búsqueda
+function showProductsBySearch(products) {
+  document.getElementById('bodega-name').textContent = `Resultados de búsqueda`;
+  document.getElementById('result').textContent = `Mostrando ${products.length} productos encontrados`;
+
+  const productsBody = document.getElementById('products-body');
+  productsBody.innerHTML = '';
+
+  if (products.length === 0) {
+    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos</td></tr>';
+  } else {
+    products.forEach(product => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${product.Producto || 'N/A'}</td>
+        <td>${product.Bodega || 'N/A'}</td>
+        <td>${product.Precio || 'N/A'}</td>
+      `;
+      productsBody.appendChild(row);
+    });
   }
-  
-  return null;
+
+  document.getElementById('products-container').classList.remove('hidden');
+  updateLastUpdateTime();
+}
+
+// Modifica la función updateHistory para que guarde términos de búsqueda
+function updateHistory(searchTerm) {
+  const normalizedTerm = searchTerm.trim();
+  if (!scanHistory.some(item => item.trim().toLowerCase() === normalizedTerm.toLowerCase())) {
+    scanHistory.unshift(normalizedTerm);
+    if (scanHistory.length > 5) scanHistory.pop();
+    renderHistory();
+  }
 }
 
 // Mostrar productos
