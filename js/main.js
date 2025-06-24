@@ -29,6 +29,15 @@ document.querySelectorAll('.price-filter').forEach(btn => {
   });
 });
 
+function normalize(text) {
+  return text
+    ?.toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // quita acentos
+}
+
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
@@ -50,11 +59,11 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     'pronto baggio 1lt',
     'whiskys importados',
     'whiskys nacionales'
-  ];
+  ].map(normalize); // normaliza todos los nombres excluidos
 
   const filtered = productsData.filter(product => {
     const precio = parseInt(product.Precio?.replace(/\D/g, ''));
-    const bodega = product.Bodega?.trim().toLowerCase();
+    const bodega = normalize(product.Bodega || '');
     return (
       !isNaN(precio) &&
       precio > 0 &&
@@ -87,6 +96,7 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     });
   }
 }
+
 
 
   // Configurar event listeners
