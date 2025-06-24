@@ -58,7 +58,38 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     'licores',
     'pronto baggio 1lt',
     'whiskys importados',
-    'whiskys nacionales'
+    'whiskys nacionales',
+    'damajuanas',
+    'aperitivos',
+    'estuches',
+    'pulpas',
+    'leches latte baggio',
+    'lays (snacks)',
+    'botellas retornables',
+    'cerveza botella x330',
+    'especias',
+    'encurtidos vanoli',
+    'escabeches',
+    'budines',
+    'GASEOSAS Y ENERGISANTES',
+    'ESTUCHES CON COPAS',
+    'Copas individuales',
+    'HIELERAS',
+    'PRODUCTOS ALMACEN',
+    'SNACKS',
+    'BOTANICOS',
+    'PROMOS',
+    'VINOS PARA COCINAR',
+    'Estuches Copas',
+    'OLIVARES DEL CESAR',
+    'PRONTO BAGGIO 1LT',
+    'CIGARROS',
+    '9 de oro',
+    'Doña chola',
+    'Cajas y canastas para vino',
+    'Gaseosas y jugos'
+   
+
   ].map(normalize); // normaliza todos los nombres excluidos
 
   const filtered = productsData.filter(product => {
