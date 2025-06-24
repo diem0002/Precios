@@ -47,11 +47,12 @@
   <div id="result">Escanea un código QR o buscá manualmente para ver los productos</div>
 
   <!-- Filtros por precio -->
-  <div id="price-filters">
-    <button class="btn price-filter" data-range="0-5000">Hasta $5.000</button>
-    <button class="btn price-filter" data-range="5000-15000">Entre $5.000 y $15.000</button>
-    <button class="btn price-filter" data-range="15000-999999">Más de $15.000</button>
-  </div>
+<div id="price-filters" style="margin: 20px 0;">
+  <button class="btn" onclick="showRandomProductsByPrice(0, 4999)">🍷 Hasta $5.000</button>
+  <button class="btn" onclick="showRandomProductsByPrice(5000, 15000)">🍇 De $5.000 a $15.000</button>
+  <button class="btn" onclick="showRandomProductsByPrice(15001, Infinity)">💎 Desde $15.000</button>
+</div>
+
 
 
   <!-- Loading -->
