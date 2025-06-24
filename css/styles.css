@@ -330,7 +330,12 @@ td:nth-child(3) {
     margin-bottom: 10px;
   }
 }
-
+@media (max-width: 480px) {
+  #bodega-name {
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+}
 #price-filters {
   margin-top: 10px;
   display: flex;

@@ -77,7 +77,9 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   const selected = shuffled.slice(0, 10);
   
   document.getElementById('products-container').classList.remove('hidden');
-  document.getElementById('bodega-name').textContent = `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+  const rangeText = maxPrice === 999999 ? `Desde $${minPrice.toLocaleString()}` 
+                                     : `De $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+    document.getElementById('bodega-name').textContent = `Vinos ${rangeText}`;
   document.getElementById('result').textContent = `Mostrando 10 vinos en ese rango de precios.`;
 
   const productsBody = document.getElementById('products-body');
