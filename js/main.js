@@ -258,9 +258,17 @@ function showProductSearchResults(products, searchTerm) {
     products.forEach(product => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${product.Producto || 'N/A'}</td>
-        <td>${product.Bodega || 'N/A'}</td>
-        <td>${product.Precio || 'N/A'}</td>
+        <td>
+          <span class="product-name">${product.Producto || 'N/A'}</span>
+          ${product.Varietal ? `<span class="product-detail">${product.Varietal}</span>` : ''}
+        </td>
+        <td>
+          <span class="bodega-name">${product.Bodega || 'N/A'}</span>
+          ${product.Region ? `<span class="product-detail">${product.Region}</span>` : ''}
+        </td>
+        <td>
+          ${product.Precio || 'N/A'}
+        </td>
       `;
       productsBody.appendChild(row);
     });
@@ -289,9 +297,17 @@ function showProducts(bodegaName) {
     filteredProducts.forEach(product => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${product.Producto || 'N/A'}</td>
-        <td>${product.Bodega || 'N/A'}</td>
-        <td>${product.Precio || 'N/A'}</td>
+        <td>
+          <span class="product-name">${product.Producto || 'N/A'}</span>
+          ${product.Varietal ? `<span class="product-detail">${product.Varietal}</span>` : ''}
+        </td>
+        <td>
+          <span class="bodega-name">${product.Bodega || 'N/A'}</span>
+          ${product.Region ? `<span class="product-detail">${product.Region}</span>` : ''}
+        </td>
+        <td>
+          ${product.Precio || 'N/A'}
+        </td>
       `;
       productsBody.appendChild(row);
     });

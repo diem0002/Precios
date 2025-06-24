@@ -233,6 +233,72 @@ td:nth-child(3) {
   background-color: var(--lola);
   font-weight: bold;
 }
+
+/* ===== MEJORAS PARA LA TABLA ===== */
+#products-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 15px 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+#products-table th {
+  background-color: var(--finn);
+  color: white;
+  font-weight: 600;
+  padding: 14px 12px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+#products-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  vertical-align: middle;
+}
+
+#products-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Efecto hover para filas */
+#products-table tr:hover td {
+  background-color: rgba(220, 205, 213, 0.3); /* --lola con transparencia */
+}
+
+/* Estilos específicos para columnas */
+#products-table td:nth-child(1) { /* Columna Producto */
+  font-weight: 600;
+  color: var(--cosmic-2);
+}
+
+#products-table td:nth-child(3) { /* Columna Precio */
+  font-weight: 700;
+  color: var(--tawny-port);
+  text-align: right;
+}
+
+/* Jerarquía visual para textos */
+.product-name {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.bodega-name {
+  font-weight: 500;
+}
+
+.product-detail {
+  font-size: 12px;
+  color: var(--mountbatten-pink-2);
+  opacity: 0.9;
+}
+
 @media (max-width: 480px) {
   body {
     padding: 10px;
