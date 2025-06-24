@@ -29,7 +29,6 @@ document.querySelectorAll('.price-filter').forEach(btn => {
   });
 });
 
-
 function normalize(text) {
   return text
     ?.toString()
@@ -97,7 +96,7 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
 
   const filtered = productsData.filter(product => {
     const precio = parseInt(product.Precio?.replace(/\D/g, ''));
-    const bodega = product.Bodega?.trim().toLowerCase();
+    const bodega = normalize(product.Bodega || '');
     return (
       !isNaN(precio) &&
       precio > 0 &&
@@ -109,13 +108,9 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
 
   const shuffled = filtered.sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, 10);
-
-  const titleText =
-    maxPrice === Infinity
-      ? `Vinos desde $${minPrice.toLocaleString()}`
-      : `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
-
-  document.getElementById('bodega-name').textContent = titleText;
+  
+  document.getElementById('products-container').classList.remove('hidden');
+  document.getElementById('bodega-name').textContent = `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
   document.getElementById('result').textContent = `Mostrando 10 vinos en ese rango de precios.`;
 
   const productsBody = document.getElementById('products-body');
@@ -134,9 +129,6 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
       productsBody.appendChild(row);
     });
   }
-
-  document.getElementById('products-container').classList.remove('hidden');
-  updateLastUpdateTime();
 }
 
 
