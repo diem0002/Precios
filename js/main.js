@@ -4,6 +4,8 @@ let productsData = [];
 let videoStream = null;
 const scanHistory = [];
 
+
+
 // Mostrar estado de conexión
 function showConnectionStatus(connecting) {
   const statusElement = document.getElementById('connection-status');
@@ -27,16 +29,42 @@ document.querySelectorAll('.price-filter').forEach(btn => {
   });
 });
 
-// Mostrar 10 vinos aleatorios en el rango de precios
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
-  const filtered = productsData.filter(product => {
-  const precio = parseInt(product.Precio?.replace(/\D/g, ''));
-  return !isNaN(precio) && precio > 0 && precio >= minPrice && precio <= maxPrice;
-});
+  const excludedBodegas = [
+    'accesorios',
+    'aceites de oliva',
+    'agua bidon',
+    'agua y soda',
+    'aperitivos',
+    'bebidas fuertes',
+    'blsas friselina',
+    'cajas y canastas para vino',
+    'cerveza botella x330',
+    'cervezas importadas latas',
+    'cervezas nacionales latas',
+    'estuches cerveza',
+    'grolsch ( porron ceramico)',
+    'licores',
+    'pronto baggio 1lt',
+    'whiskys importados',
+    'whiskys nacionales'
+  ];
 
-  const shuffled = filtered.sort(() => 0.5 - Math.random()); // Mezcla aleatoria
+  const filtered = productsData.filter(product => {
+    const precio = parseInt(product.Precio?.replace(/\D/g, ''));
+    const bodega = product.Bodega?.trim().toLowerCase();
+    return (
+      !isNaN(precio) &&
+      precio > 0 &&
+      precio >= minPrice &&
+      precio <= maxPrice &&
+      !excludedBodegas.includes(bodega)
+    );
+  });
+
+  const shuffled = filtered.sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, 10);
 
   document.getElementById('bodega-name').textContent = `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
@@ -58,10 +86,8 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
       productsBody.appendChild(row);
     });
   }
-
-  document.getElementById('products-container').classList.remove('hidden');
-  updateLastUpdateTime();
 }
+
 
   // Configurar event listeners
   document.getElementById('startScanner').addEventListener('click', startScanner);
