@@ -124,55 +124,110 @@ function handleDataError() {
 
 // -------------------- PRODUCTOS POR PRECIO --------------------
 
-function normalize(text) {
-  return text?.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
-  const excludedBodegas = [...lista_de_bodegas_a_excluir].map(normalize);
+  const excludedBodegas = [
+    'accesorios',
+    'aceites de oliva',
+    'agua bidon',
+    'agua y soda',
+    'aperitivos',
+    'bebidas fuertes',
+    'blsas friselina',
+    'cajas y canastas para vino',
+    'cerveza botella x330',
+    'cervezas importadas latas',
+    'cervezas nacionales latas',
+    'estuches cerveza',
+    'grolsch ( porron ceramico)',
+    'licores',
+    'pronto baggio 1lt',
+    'whiskys importados',
+    'whiskys nacionales',
+    'damajuanas',
+    'aperitivos',
+    'estuches',
+    'pulpas',
+    'leches latte baggio',
+    'lays (snacks)',
+    'botellas retornables',
+    'cerveza botella x330',
+    'especias',
+    'encurtidos vanoli',
+    'escabeches',
+    'budines',
+    'GASEOSAS Y ENERGISANTES',
+    'ESTUCHES CON COPAS',
+    'Copas individuales',
+    'HIELERAS',
+    'PRODUCTOS ALMACEN',
+    'SNACKS',
+    'BOTANICOS',
+    'PROMOS',
+    'VINOS PARA COCINAR',
+    'Estuches Copas',
+    'OLIVARES DEL CESAR',
+    'PRONTO BAGGIO 1LT',
+    'CIGARROS',
+    '9 de oro',
+    'Doña chola',
+    'Cajas y canastas para vino',
+    'Gaseosas y jugos',
+    'Valle calchaquies',
+  ].map(normalize);
+
+  // 1. Filtrar productos dentro del rango y que no estén excluidos
   const filtered = productsData.filter(product => {
-    const precio = parseInt(product.Precio?.replace(/\D/g, ''));
+    const precio = parseInt(product.Precio?.replace(/\D/g, '')) || 0;
     const bodega = normalize(product.Bodega || '');
     return (
-      !isNaN(precio) &&
+      precio > 0 &&
       precio >= minPrice &&
       precio <= maxPrice &&
       !excludedBodegas.includes(bodega)
     );
   });
 
-  const selection = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 10);
-  const sorted = selection.sort((a, b) => {
+  // 2. Seleccionar 10 aleatorios
+  const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+  const randomSelection = shuffled.slice(0, 10);
+
+  // 3. Ordenar los 10 seleccionados por precio
+  const sortedSelection = randomSelection.sort((a, b) => {
     const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
     const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
-    return priceA - priceB;
+    return priceA - priceB; // Orden ascendente (menor a mayor)
   });
+
+  // Mostrar resultados
+  document.getElementById('products-container').classList.remove('hidden');
+  
+  // Texto mejorado para el rango
+  const rangeText = maxPrice === 999999 ? `Desde $${minPrice.toLocaleString()}` 
+                                       : `De $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+  document.getElementById('bodega-name').textContent = `Vinos ${rangeText}`;
+  
+  document.getElementById('result').textContent = `Mostrando ${sortedSelection.length} vinos en ese rango.`;
 
   const productsBody = document.getElementById('products-body');
   productsBody.innerHTML = '';
-  if (!sorted.length) {
+
+  if (sortedSelection.length === 0) {
     productsBody.innerHTML = '<tr><td colspan="3">No se encontraron vinos en ese rango</td></tr>';
-    return;
+  } else {
+    sortedSelection.forEach(product => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${product.Producto || 'N/A'}</td>
+        <td>${product.Bodega || 'N/A'}</td>
+        <td>${product.Precio || 'N/A'}</td>
+      `;
+      productsBody.appendChild(row);
+    });
   }
-
-  sorted.forEach(product => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.Producto || 'N/A'}</td>
-      <td>${product.Bodega || 'N/A'}</td>
-      <td>${product.Precio || 'N/A'}</td>
-    `;
-    productsBody.appendChild(row);
-  });
-
-  document.getElementById('bodega-name').textContent =
-    maxPrice === 999999 ? `Vinos desde $${minPrice.toLocaleString()}` :
-    `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
-  document.getElementById('result').textContent = `Mostrando ${sorted.length} vinos en ese rango.`;
-  document.getElementById('products-container').classList.remove('hidden');
 }
+
 
 // -------------------- SCANNER QR --------------------
 
