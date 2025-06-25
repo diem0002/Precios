@@ -129,16 +129,19 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   ].map(normalize);
 
   const filtered = productsData.filter(product => {
-    const precio = parseInt(product.Precio?.replace(/\D/g, '')) || 0;
+    const precioRaw = product.Precio?.replace(/\D/g, '');
+    const precio = parseInt(precioRaw);
     const bodega = normalize(product.Bodega || '');
+
     return (
+      !isNaN(precio) &&
+      precio > 0 &&
       precio >= minPrice &&
       precio <= maxPrice &&
       !excludedBodegas.includes(bodega)
     );
   });
 
-  // Mezclar y tomar 10 randoms
   const shuffled = [...filtered].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, 10).sort((a, b) => {
     const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
