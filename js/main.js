@@ -79,7 +79,8 @@ function normalize(text) {
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
-  const excludedBodegas = ['accesorios',
+  const excludedBodegas = [
+    'accesorios',
     'aceites de oliva',
     'agua bidon',
     'agua y soda',
@@ -126,23 +127,30 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     'Cajas y canastas para vino',
     'Gaseosas y jugos',
     'Valle calchaquies',
-  ].map(normalize); // poné tu lista completa aquí como tenías
+  ].map(normalize);
 
+  // Filtrar productos por rango de precio y exclusiones
   const filtered = productsData.filter(product => {
-    const precio = parseInt(product.Precio?.replace(/\D/g, ''));
+    const precio = parseInt(product.Precio?.replace(/\D/g, '')) || 0;
     const bodega = normalize(product.Bodega || '');
     return (
-      !isNaN(precio) &&
-      precio > 0 &&
       precio >= minPrice &&
       precio <= maxPrice &&
       !excludedBodegas.includes(bodega)
     );
   });
 
-  const shuffled = filtered.sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, 10);
+  // Ordenar por precio de menor a mayor
+  const sortedByPrice = [...filtered].sort((a, b) => {
+    const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
+    const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
+    return priceA - priceB;
+  });
 
+  // Tomar los primeros 10 (los más económicos)
+  const selected = sortedByPrice.slice(0, 10);
+
+  // Mostrar resultados
   document.getElementById('products-container').classList.remove('hidden');
   document.getElementById('bodega-name').textContent =
     maxPrice === 999999
@@ -272,7 +280,7 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-// Búsqueda manual
+// Búsqueda manual por NOMBRE DE PRODUCTO
 function toggleManualSearch() {
   document.getElementById('manualInputContainer').classList.toggle('hidden');
   if (!document.getElementById('manualInputContainer').classList.contains('hidden')) {
@@ -285,48 +293,68 @@ function manualSearch() {
   const searchTerm = input.value.trim();
 
   if (searchTerm) {
-    const foundBodega = findBodega(searchTerm);
-    if (foundBodega) {
-      showProducts(foundBodega);
-      updateHistory(foundBodega);
+    const foundProducts = searchProductsByName(searchTerm);
+    if (foundProducts.length > 0) {
+      showProductSearchResults(foundProducts, searchTerm);
+      updateHistory(searchTerm);
       input.value = '';
       document.getElementById('manualInputContainer').classList.add('hidden');
     } else {
-      document.getElementById('result').textContent = 'No se encontró la bodega. Intenta con otro nombre.';
+      document.getElementById('result').textContent = 'No se encontraron productos. Intenta con otro nombre.';
     }
   } else {
-    document.getElementById('result').textContent = 'Por favor ingresa un nombre de bodega';
+    document.getElementById('result').textContent = 'Por favor ingresa un nombre de producto';
   }
 }
 
-function findBodega(searchTerm) {
-  if (!productsData.length) return null;
-
-  const searchTermLower = searchTerm.toLowerCase().trim();
-  const exactMatch = productsData.find(product =>
-    product.Bodega && product.Bodega.toLowerCase().trim() === searchTermLower
-  );
-
-  if (exactMatch) return exactMatch.Bodega;
-
-  const partialMatches = productsData.filter(product =>
-    product.Bodega && product.Bodega.toLowerCase().includes(searchTermLower)
-  );
-
-  if (partialMatches.length > 0) {
-    return partialMatches[0].Bodega;
-  }
-
-  return null;
+function searchProductsByName(searchTerm) {
+  if (!productsData.length) return [];
+  
+  const searchTermLower = normalize(searchTerm);
+  
+  return productsData.filter(product => {
+    const productName = normalize(product.Producto || '');
+    return productName.includes(searchTermLower);
+  });
 }
 
+function showProductSearchResults(products, searchTerm) {
+  document.getElementById('bodega-name').textContent = `Resultados para: "${searchTerm}"`;
+  document.getElementById('result').textContent = `Mostrando ${products.length} productos encontrados`;
+
+  const productsBody = document.getElementById('products-body');
+  productsBody.innerHTML = '';
+
+  if (!products.length) {
+    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos</td></tr>';
+    return;
+  }
+
+  // Ordenar por nombre de producto
+  products.sort((a, b) => (a.Producto || '').localeCompare(b.Producto || ''));
+
+  products.forEach(product => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${product.Producto || 'N/A'}</td>
+      <td>${product.Bodega || 'N/A'}</td>
+      <td>${product.Precio || 'N/A'}</td>
+    `;
+    productsBody.appendChild(row);
+  });
+
+  document.getElementById('products-container').classList.remove('hidden');
+  updateLastUpdateTime();
+}
+
+// Mostrar productos por bodega (para QR)
 function showProducts(bodegaName) {
-  const normalizedBodegaName = bodegaName.trim().toLowerCase();
+  const normalizedBodegaName = normalize(bodegaName);
   document.getElementById('bodega-name').textContent = bodegaName;
   document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
 
   const filteredProducts = productsData.filter(product =>
-    product.Bodega && product.Bodega.trim().toLowerCase() === normalizedBodegaName
+    product.Bodega && normalize(product.Bodega) === normalizedBodegaName
   );
 
   const productsBody = document.getElementById('products-body');
@@ -351,10 +379,10 @@ function showProducts(bodegaName) {
   updateLastUpdateTime();
 }
 
-function updateHistory(bodega) {
-  const normalizedBodega = bodega.trim();
-  if (!scanHistory.some(item => item.trim() === normalizedBodega)) {
-    scanHistory.unshift(normalizedBodega);
+function updateHistory(searchTerm) {
+  const normalizedTerm = searchTerm.trim();
+  if (!scanHistory.some(item => normalize(item) === normalize(normalizedTerm))) {
+    scanHistory.unshift(normalizedTerm);
     if (scanHistory.length > 5) scanHistory.pop();
     renderHistory();
   }
@@ -365,12 +393,15 @@ function renderHistory() {
   const list = document.getElementById('historyList');
 
   list.innerHTML = '';
-  scanHistory.forEach(name => {
+  scanHistory.forEach(term => {
     const li = document.createElement('li');
-    li.textContent = name;
+    li.textContent = term;
     li.addEventListener('click', () => {
-      document.getElementById('manualBodegaInput').value = name;
-      showProducts(name);
+      document.getElementById('manualBodegaInput').value = term;
+      const foundProducts = searchProductsByName(term);
+      if (foundProducts.length > 0) {
+        showProductSearchResults(foundProducts, term);
+      }
       document.getElementById('manualInputContainer').classList.add('hidden');
     });
     list.appendChild(li);
