@@ -150,10 +150,12 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   });
 
   document.getElementById('products-container').classList.remove('hidden');
+  const minMostrar = minPrice === 0 ? 1 : minPrice;
   document.getElementById('bodega-name').textContent =
-    maxPrice === 999999
-      ? `Vinos desde $${minPrice.toLocaleString()}`
-      : `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+  maxPrice === 999999
+    ? `Vinos desde $${minMostrar.toLocaleString()}`
+    : `Vinos de $${minMostrar.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+
   document.getElementById('result').textContent = `Mostrando ${selected.length} vinos en ese rango de precios.`;
 
   const productsBody = document.getElementById('products-body');
