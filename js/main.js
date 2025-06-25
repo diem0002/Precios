@@ -35,14 +35,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 const promoImages = [
-  'img/promos/Buhero Pomo.png',
-  'img/promos/promo branca.png',
-  'img/promos/promo campari.png',
-  'img/promos/promo carpano.png',
-  'img/promos/promo gancia.png',
-  'img/promos/promo mitos.png',
-  'img/promos/promo smirnoff.png',
-  'img/promos/ROCKY LOLA.png',
+  'img/promos/Buhero_Pomo.png',
+  'img/promos/promo_ranca.png',
+  'img/promos/promo_campari.png',
+  'img/promos/promo_carpano.png',
+  'img/promos/promo_gancia.png',
+  'img/promos/promo_mitos.png',
+  'img/promos/promo_smirnoff.png',
+  'img/promos/ROCKY_LOLA.png',
 ];
 
 let promoIndex = 0;
