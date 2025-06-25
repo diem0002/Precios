@@ -336,6 +336,8 @@ td:nth-child(3) {
     white-space: nowrap;
   }
 }
+
+
 #price-filters {
   margin-top: 10px;
   display: flex;
@@ -355,12 +357,48 @@ td:nth-child(3) {
 }
 
 .carousel img {
-  max-height: 150px; /* Ajustable */
+  height: 180px;         /* <-- fijamos altura también aquí */
+  max-height: 180px;
+  object-fit: contain;
   width: 100%;
-  height: auto;           /* Que mantenga proporción */
   display: block;
-  object-fit: contain;    /* Para que no se deforme */
   transition: opacity 0.5s ease-in-out;
   background-color: rgba(255, 255, 255, 0);
   border-radius: 16px;
+}
+
+.promo-carousel-wrapper {
+  width: 100%;
+  max-width: 800px;
+  overflow: hidden;
+  border-radius: 16px;
+  
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.promo-carousel-track {
+  display: flex;
+  transition: transform 0.6s ease-in-out;
+  will-change: transform;
+}
+
+.promo-carousel-track img {
+  width: 100%;
+  flex: 0 0 100%;
+  object-fit: contain; /* mantener proporción */
+  height: 180px;        /* <-- Cambiado de auto a valor controlado */
+  max-height: 180px;
+  user-select: none;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: 16px;
+}
+
+@media (max-width: 480px) {
+  .promo-carousel-track img,
+  .carousel img {
+    height: 140px;
+    max-height: 140px;
+  }
 }
