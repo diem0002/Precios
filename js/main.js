@@ -36,7 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 const promoImages = [
   'img/promos/Buhero_Pomo.png',
-  'img/promos/promo_ranca.png',
+  'img/promos/promo_branca.png',
   'img/promos/promo_campari.png',
   'img/promos/promo_carpano.png',
   'img/promos/promo_gancia.png',
