@@ -258,3 +258,24 @@ td:nth-child(3) {
   gap: 10px;
   justify-content: center;
 }
+
+.carousel {
+  margin: 10px auto;
+  width: 100%;
+  max-width: 400px;       /* Límite de ancho */
+  height: auto;
+  border-radius: 16px;
+  overflow: hidden;
+ 
+}
+
+.carousel img {
+  max-height: 150px; /* Ajustable */
+  width: 100%;
+  height: auto;           /* Que mantenga proporción */
+  display: block;
+  object-fit: contain;    /* Para que no se deforme */
+  transition: opacity 0.5s ease-in-out;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: 16px;
+}

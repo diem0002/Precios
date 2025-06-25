@@ -29,6 +29,33 @@ document.querySelectorAll('.price-filter').forEach(btn => {
   });
 });
 
+const promoImages = [
+  'img/promos/Buhero Pomo.png',
+  'img/promos/promo branca.png',
+  'img/promos/promo campari.png',
+  'img/promos/promo carpano.png',
+  'img/promos/promo gancia.png',
+  'img/promos/promo mitos.png',
+  'img/promos/promo smirnoff.png',
+  'img/promos/ROCKY LOLA.png',
+];
+
+let promoIndex = 0;
+const promoElement = document.getElementById('promo-image');
+
+function cyclePromos() {
+  promoIndex = (promoIndex + 1) % promoImages.length;
+  promoElement.style.opacity = 0;
+
+  setTimeout(() => {
+    promoElement.src = promoImages[promoIndex];
+    promoElement.style.opacity = 1;
+  }, 500);
+}
+
+setInterval(cyclePromos, 4000); // cambia cada 4 segundos
+
+
 function normalize(text) {
   return text
     ?.toString()
