@@ -73,32 +73,33 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     );
   });
 
-  // --- CAMBIO CLAVE AQUÍ ---
-  const sortedByPrice = filtered.sort((a, b) => {
+  // 2. Mezclar aleatoriamente y tomar 10
+  const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+  const randomSelection = shuffled.slice(0, 10);
+
+  // 3. Ordenar solo esos 10 por precio
+  const sortedSelection = randomSelection.sort((a, b) => {
     const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
     const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
     return priceA - priceB; // Orden ascendente
   });
-  
-  const selected = sortedByPrice.slice(0, 10);
-  // -------------------------
 
+  // Resto del código igual...
   document.getElementById('products-container').classList.remove('hidden');
   
-  // Texto mejorado que ya implementamos antes
   const rangeText = maxPrice === 999999 ? `Desde $${minPrice.toLocaleString()}` 
                                        : `De $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
   document.getElementById('bodega-name').textContent = `Vinos ${rangeText}`;
   
-  document.getElementById('result').textContent = `Mostrando ${selected.length} vinos en ese rango.`;
+  document.getElementById('result').textContent = `Mostrando ${sortedSelection.length} vinos en ese rango.`;
 
   const productsBody = document.getElementById('products-body');
   productsBody.innerHTML = '';
 
-  if (selected.length === 0) {
+  if (sortedSelection.length === 0) {
     productsBody.innerHTML = '<tr><td colspan="3">No se encontraron vinos en ese rango</td></tr>';
   } else {
-    selected.forEach(product => {
+    sortedSelection.forEach(product => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${product.Producto || 'N/A'}</td>
