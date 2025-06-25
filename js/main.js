@@ -35,7 +35,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 const promoImages = [
-  'img/promos/Buhero_Pomo.png',
+  'img/promos/Buhero_Promo.png',
   'img/promos/promo_branca.png',
   'img/promos/promo_campari.png',
   'img/promos/promo_carpano.png',
