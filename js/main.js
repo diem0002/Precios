@@ -4,8 +4,6 @@ let productsData = [];
 let videoStream = null;
 const scanHistory = [];
 
-
-
 // Mostrar estado de conexión
 function showConnectionStatus(connecting) {
   const statusElement = document.getElementById('connection-status');
@@ -21,12 +19,19 @@ function showConnectionStatus(connecting) {
 window.addEventListener('DOMContentLoaded', () => {
   loadData();
   
-  // Filtros por precio
-document.querySelectorAll('.price-filter').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const [min, max] = btn.dataset.range.split('-').map(Number);
-    showRandomProductsByPrice(min, max);
+  // Filtros por precio con emojis
+  document.querySelectorAll('.price-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [min, max] = btn.dataset.range.split('-').map(Number);
+      showRandomProductsByPrice(min, max);
+    });
   });
+
+  // Configurar event listeners
+  document.getElementById('startScanner').addEventListener('click', startScanner);
+  document.getElementById('stopScanner').addEventListener('click', stopScanner);
+  document.getElementById('toggleManualSearch').addEventListener('click', toggleManualSearch);
+  document.getElementById('manualSearchBtn').addEventListener('click', manualSearch);
 });
 
 const promoImages = [
@@ -69,57 +74,19 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
   const excludedBodegas = [
-    'accesorios',
-    'aceites de oliva',
-    'agua bidon',
-    'agua y soda',
-    'aperitivos',
-    'bebidas fuertes',
-    'blsas friselina',
-    'cajas y canastas para vino',
-    'cerveza botella x330',
-    'cervezas importadas latas',
-    'cervezas nacionales latas',
-    'estuches cerveza',
-    'grolsch ( porron ceramico)',
-    'licores',
-    'pronto baggio 1lt',
-    'whiskys importados',
-    'whiskys nacionales',
-    'damajuanas',
-    'aperitivos',
-    'estuches',
-    'pulpas',
-    'leches latte baggio',
-    'lays (snacks)',
-    'botellas retornables',
-    'cerveza botella x330',
-    'especias',
-    'encurtidos vanoli',
-    'escabeches',
-    'budines',
-    'GASEOSAS Y ENERGISANTES',
-    'ESTUCHES CON COPAS',
-    'Copas individuales',
-    'HIELERAS',
-    'PRODUCTOS ALMACEN',
-    'SNACKS',
-    'BOTANICOS',
-    'PROMOS',
-    'VINOS PARA COCINAR',
-    'Estuches Copas',
-    'OLIVARES DEL CESAR',
-    'PRONTO BAGGIO 1LT',
-    'CIGARROS',
-    '9 de oro',
-    'Doña chola',
-    'Cajas y canastas para vino',
-    'Gaseosas y jugos',
-    'Valle calchaquies',
-    
-   
-
-  ].map(normalize); // normaliza todos los nombres excluidos
+    'accesorios', 'aceites de oliva', 'agua bidon', 'agua y soda', 'aperitivos',
+    'bebidas fuertes', 'blsas friselina', 'cajas y canastas para vino',
+    'cerveza botella x330', 'cervezas importadas latas', 'cervezas nacionales latas',
+    'estuches cerveza', 'grolsch ( porron ceramico)', 'licores', 'pronto baggio 1lt',
+    'whiskys importados', 'whiskys nacionales', 'damajuanas', 'aperitivos', 'estuches',
+    'pulpas', 'leches latte baggio', 'lays (snacks)', 'botellas retornables',
+    'cerveza botella x330', 'especias', 'encurtidos vanoli', 'escabeches', 'budines',
+    'GASEOSAS Y ENERGISANTES', 'ESTUCHES CON COPAS', 'Copas individuales', 'HIELERAS',
+    'PRODUCTOS ALMACEN', 'SNACKS', 'BOTANICOS', 'PROMOS', 'VINOS PARA COCINAR',
+    'Estuches Copas', 'OLIVARES DEL CESAR', 'PRONTO BAGGIO 1LT', 'CIGARROS',
+    '9 de oro', 'Doña chola', 'Cajas y canastas para vino', 'Gaseosas y jugos',
+    'Valle calchaquies'
+  ].map(normalize);
 
   const filtered = productsData.filter(product => {
     const precio = parseInt(product.Precio?.replace(/\D/g, ''));
@@ -133,20 +100,33 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     );
   });
 
-  const shuffled = filtered.sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, 10);
-  
+  // 2. Mezclar aleatoriamente y tomar 10
+  const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+  const randomSelection = shuffled.slice(0, 10);
+
+  // 3. Ordenar solo esos 10 por precio
+  const sortedSelection = randomSelection.sort((a, b) => {
+    const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
+    const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
+    return priceA - priceB; // Orden ascendente
+  });
+
+  // Resto del código igual...
   document.getElementById('products-container').classList.remove('hidden');
-  document.getElementById('bodega-name').textContent = `Vinos de $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
-  document.getElementById('result').textContent = `Mostrando 10 vinos en ese rango de precios.`;
+  
+  const rangeText = maxPrice === 999999 ? `Desde $${minPrice.toLocaleString()}` 
+                                       : `De $${minPrice.toLocaleString()} a $${maxPrice.toLocaleString()}`;
+  document.getElementById('bodega-name').textContent = `Vinos ${rangeText}`;
+  
+  document.getElementById('result').textContent = `Mostrando ${sortedSelection.length} vinos en ese rango.`;
 
   const productsBody = document.getElementById('products-body');
   productsBody.innerHTML = '';
 
-  if (selected.length === 0) {
+  if (sortedSelection.length === 0) {
     productsBody.innerHTML = '<tr><td colspan="3">No se encontraron vinos en ese rango</td></tr>';
   } else {
-    selected.forEach(product => {
+    sortedSelection.forEach(product => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${product.Producto || 'N/A'}</td>
@@ -158,30 +138,18 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   }
 }
 
-
-
-  // Configurar event listeners
-  document.getElementById('startScanner').addEventListener('click', startScanner);
-  document.getElementById('stopScanner').addEventListener('click', stopScanner);
-  document.getElementById('toggleManualSearch').addEventListener('click', toggleManualSearch);
-  document.getElementById('manualSearchBtn').addEventListener('click', manualSearch);
-});
-
 async function loadData() {
   showConnectionStatus(true);
   document.getElementById('loading').classList.remove('hidden');
 
   try {
-    // Forzar actualización añadiendo timestamp
     const timestamp = new Date().getTime();
     const response = await fetch(`${SHEET_URL}&timestamp=${timestamp}`);
     
-    // Verificar si la respuesta es válida
     if (!response.ok) throw new Error('Error en la respuesta del servidor');
     
     const csvData = await response.text();
     
-    // Procesar datos
     Papa.parse(csvData, {
       header: true,
       complete: function(results) {
@@ -211,10 +179,9 @@ function handleDataError() {
   document.getElementById('loading').classList.add('hidden');
   showConnectionStatus(true);
   document.getElementById('result').textContent = 'Error al cargar datos. Reconectando...';
-  
-  // Reintentar después de 5 segundos
   setTimeout(loadData, 5000);
 }
+
 // Funciones del escáner QR
 function startScanner() {
   const scannerContainer = document.getElementById('scannerContainer');
@@ -229,7 +196,6 @@ function startScanner() {
       video.srcObject = stream;
       video.classList.remove('hidden');
       video.play();
-
       requestAnimationFrame(tick);
     })
     .catch(function (err) {
@@ -275,10 +241,13 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-// Funciones de búsqueda manual
+// Funciones de búsqueda manual por PRODUCTO (modificadas)
 function toggleManualSearch() {
-  document.getElementById('manualInputContainer').classList.toggle('hidden');
-  if (!document.getElementById('manualInputContainer').classList.contains('hidden')) {
+  const inputContainer = document.getElementById('manualInputContainer');
+  inputContainer.classList.toggle('hidden');
+  
+  if (!inputContainer.classList.contains('hidden')) {
+    document.getElementById('manualBodegaInput').placeholder = "Escribí el nombre del producto";
     document.getElementById('manualBodegaInput').focus();
   }
 }
@@ -288,54 +257,75 @@ function manualSearch() {
   const searchTerm = input.value.trim();
   
   if (searchTerm) {
-    const foundBodega = findBodega(searchTerm);
-    if (foundBodega) {
-      showProducts(foundBodega);
-      updateHistory(foundBodega);
+    const foundProducts = searchProductsByName(searchTerm);
+    if (foundProducts.length > 0) {
+      showProductSearchResults(foundProducts, searchTerm);
+      updateHistory(searchTerm);
       input.value = '';
       document.getElementById('manualInputContainer').classList.add('hidden');
     } else {
-      document.getElementById('result').textContent = 'No se encontró la bodega. Intenta con otro nombre.';
+      document.getElementById('result').textContent = 'No se encontraron productos. Intenta con otro nombre.';
     }
   } else {
-    document.getElementById('result').textContent = 'Por favor ingresa un nombre de bodega';
+    document.getElementById('result').textContent = 'Por favor ingresa un nombre de producto';
   }
 }
 
-// Función mejorada para encontrar bodegas
-function findBodega(searchTerm) {
-  if (!productsData.length) return null;
+function searchProductsByName(searchTerm) {
+  if (!productsData.length) return [];
   
-  const searchTermLower = searchTerm.toLowerCase().trim();
+  const searchTermLower = normalize(searchTerm);
   
-  // Primero buscar coincidencia exacta (insensible a mayúsculas)
-  let exactMatch = productsData.find(product => 
-    product.Bodega && product.Bodega.toLowerCase().trim() === searchTermLower
-  );
-  
-  if (exactMatch) return exactMatch.Bodega;
-  
-  // Si no hay coincidencia exacta, buscar parcial
-  const partialMatches = productsData.filter(product => 
-    product.Bodega && product.Bodega.toLowerCase().includes(searchTermLower)
-  );
-  
-  if (partialMatches.length > 0) {
-    // Devolver el nombre canónico de la primera bodega que coincida
-    return partialMatches[0].Bodega;
-  }
-  
-  return null;
+  return productsData.filter(product => {
+    const productName = normalize(product.Producto);
+    return productName.includes(searchTermLower);
+  });
 }
 
-// Mostrar productos
+function showProductSearchResults(products, searchTerm) {
+  document.getElementById('bodega-name').textContent = `Resultados para: "${searchTerm}"`;
+  document.getElementById('result').textContent = `Mostrando ${products.length} productos encontrados`;
+
+  const productsBody = document.getElementById('products-body');
+  productsBody.innerHTML = '';
+
+  if (products.length === 0) {
+    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos</td></tr>';
+  } else {
+    // Ordenar alfabéticamente por nombre de producto
+    products.sort((a, b) => (a.Producto || '').localeCompare(b.Producto || ''));
+    
+    products.forEach(product => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <span class="product-name">${product.Producto || 'N/A'}</span>
+          ${product.Varietal ? `<span class="product-detail">${product.Varietal}</span>` : ''}
+        </td>
+        <td>
+          <span class="bodega-name">${product.Bodega || 'N/A'}</span>
+          ${product.Region ? `<span class="product-detail">${product.Region}</span>` : ''}
+        </td>
+        <td>
+          ${product.Precio || 'N/A'}
+        </td>
+      `;
+      productsBody.appendChild(row);
+    });
+  }
+
+  document.getElementById('products-container').classList.remove('hidden');
+  updateLastUpdateTime();
+}
+
+// Mostrar productos por bodega (para QR)
 function showProducts(bodegaName) {
-  const normalizedBodegaName = bodegaName.trim().toLowerCase();
+  const normalizedBodegaName = normalize(bodegaName);
   document.getElementById('bodega-name').textContent = bodegaName;
   document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
 
   const filteredProducts = productsData.filter(product =>
-    product.Bodega && product.Bodega.trim().toLowerCase() === normalizedBodegaName
+    product.Bodega && normalize(product.Bodega) === normalizedBodegaName
   );
 
   const productsBody = document.getElementById('products-body');
@@ -347,9 +337,17 @@ function showProducts(bodegaName) {
     filteredProducts.forEach(product => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${product.Producto || 'N/A'}</td>
-        <td>${product.Bodega || 'N/A'}</td>
-        <td>${product.Precio || 'N/A'}</td>
+        <td>
+          <span class="product-name">${product.Producto || 'N/A'}</span>
+          ${product.Varietal ? `<span class="product-detail">${product.Varietal}</span>` : ''}
+        </td>
+        <td>
+          <span class="bodega-name">${product.Bodega || 'N/A'}</span>
+          ${product.Region ? `<span class="product-detail">${product.Region}</span>` : ''}
+        </td>
+        <td>
+          ${product.Precio || 'N/A'}
+        </td>
       `;
       productsBody.appendChild(row);
     });
@@ -359,11 +357,11 @@ function showProducts(bodegaName) {
   updateLastUpdateTime();
 }
 
-// Historial de búsquedas (solo en memoria durante la sesión)
-function updateHistory(bodega) {
-  const normalizedBodega = bodega.trim();
-  if (!scanHistory.some(item => item.trim() === normalizedBodega)) {
-    scanHistory.unshift(normalizedBodega);
+// Historial de búsquedas
+function updateHistory(searchTerm) {
+  const normalizedTerm = searchTerm.trim();
+  if (!scanHistory.some(item => normalize(item) === normalize(normalizedTerm))) {
+    scanHistory.unshift(normalizedTerm);
     if (scanHistory.length > 5) scanHistory.pop();
     renderHistory();
   }
@@ -374,12 +372,15 @@ function renderHistory() {
   const list = document.getElementById('historyList');
   
   list.innerHTML = '';
-  scanHistory.forEach(name => {
+  scanHistory.forEach(term => {
     const li = document.createElement('li');
-    li.textContent = name;
+    li.textContent = term;
     li.addEventListener('click', () => {
-      document.getElementById('manualBodegaInput').value = name;
-      showProducts(name);
+      document.getElementById('manualBodegaInput').value = term;
+      const foundProducts = searchProductsByName(term);
+      if (foundProducts.length > 0) {
+        showProductSearchResults(foundProducts, term);
+      }
       document.getElementById('manualInputContainer').classList.add('hidden');
     });
     list.appendChild(li);

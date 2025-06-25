@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#682854">
     <title>Consulta de Bodegas</title>
-    <link rel="icon" href="img/icon.png" type="image/png">
+    <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/png">
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/styles.css">
@@ -14,11 +14,15 @@
 </head>
 <body>
   <img src="./img/compañia de vinos logos-03.png" alt="Logo de la vinoteca" class="logo">
+<<<<<<< HEAD
   <h1>Consulta de Productos por Bodega</h1>
   
   <div id="promo-carousel" class="carousel">
     <img id="promo-image" src="img/promos/Buhero Promo.png" alt="Promoción" />
   </div>
+=======
+  <h1>Consulta de Productos</h1>
+>>>>>>> 0427a4d3bd30fa1a73f17b6b8f1cd80c9b5be2b5
 
   <div id="connection-status" class="hidden">
     <p>Conectando al servidor para obtener datos actualizados...</p>
@@ -36,11 +40,11 @@
 
   <!-- Búsqueda manual -->
   <div id="manual-search">
-    <button id="toggleManualSearch" class="btn">Buscar Bodega Manualmente</button>
-    <div id="manualInputContainer" class="hidden">
-      <input type="text" id="manualBodegaInput" placeholder="Escribí el nombre de la bodega" class="manual-input">
-      <button id="manualSearchBtn" class="btn">Buscar</button>
-    </div>
+    <button id="toggleManualSearch" class="btn">Buscar Producto Manualmente</button>
+      <div id="manualInputContainer" class="hidden">
+        <input type="text" id="manualBodegaInput" placeholder="Escribí el nombre del producto" class="manual-input">
+        <button id="manualSearchBtn" class="btn">Buscar</button>
+      </div>
     <div id="historyContainer" class="hidden">
       <p>Búsquedas recientes:</p>
       <ul id="historyList"></ul>
@@ -52,9 +56,9 @@
 
   <!-- Filtros por precio -->
   <div id="price-filters">
-    <button class="btn price-filter" data-range="0-5000">Hasta $5.000</button>
-    <button class="btn price-filter" data-range="5000-15000">Entre $5.000 y $15.000</button>
-    <button class="btn price-filter" data-range="15000-999999">Más de $15.000</button>
+    <button class="btn price-filter" data-range="0-5000">🍷 Hasta $5.000</button>
+    <button class="btn price-filter" data-range="5000-15000">🍾 Entre $5.000 y $15.000</button>
+    <button class="btn price-filter" data-range="15000-999999">🏆 Más de $15.000</button>
   </div>
 
 
