@@ -79,8 +79,7 @@ function normalize(text) {
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!productsData.length) return;
 
-  const excludedBodegas = [
-    'accesorios',
+  const excludedBodegas = ['accesorios',
     'aceites de oliva',
     'agua bidon',
     'agua y soda',
@@ -129,7 +128,6 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     'Valle calchaquies',
   ].map(normalize);
 
-  // Filtrar productos por rango de precio y exclusiones
   const filtered = productsData.filter(product => {
     const precio = parseInt(product.Precio?.replace(/\D/g, '')) || 0;
     const bodega = normalize(product.Bodega || '');
@@ -140,17 +138,14 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     );
   });
 
-  // Ordenar por precio de menor a mayor
-  const sortedByPrice = [...filtered].sort((a, b) => {
+  // Mezclar y tomar 10 randoms
+  const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 10).sort((a, b) => {
     const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
     const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
     return priceA - priceB;
   });
 
-  // Tomar los primeros 10 (los más económicos)
-  const selected = sortedByPrice.slice(0, 10);
-
-  // Mostrar resultados
   document.getElementById('products-container').classList.remove('hidden');
   document.getElementById('bodega-name').textContent =
     maxPrice === 999999
@@ -176,6 +171,7 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     productsBody.appendChild(row);
   });
 }
+
 
 async function loadData() {
   showConnectionStatus(true);
