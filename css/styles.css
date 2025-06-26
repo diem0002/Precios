@@ -372,7 +372,7 @@ td:nth-child(3) {
   max-width: 800px;
   overflow: hidden;
   border-radius: 16px;
-  
+  touch-action: pan-y; /* permite swipe horizontal sin bloquear el scroll */
   margin-bottom: 20px;
   position: relative;
 }
@@ -381,6 +381,7 @@ td:nth-child(3) {
   display: flex;
   transition: transform 0.6s ease-in-out;
   will-change: transform;
+  cursor: grab; /* para que se note que es interactivo en desktop */
 }
 
 .promo-carousel-track img {

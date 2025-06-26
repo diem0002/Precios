@@ -4,7 +4,6 @@ let productsData = [];
 let videoStream = null;
 const scanHistory = [];
 
-// Carrusel de promociones
 function setupCarousel() {
   const track = document.getElementById('promo-carousel-track');
   if (!track) return;
@@ -19,30 +18,48 @@ function setupCarousel() {
   }
 
   function startCarousel() {
+    stopCarousel(); // por seguridad, limpia primero
     interval = setInterval(moveCarousel, 4000);
   }
 
   function stopCarousel() {
-    clearInterval(interval);
+    if (interval) clearInterval(interval);
   }
 
-  track.addEventListener('mouseover', stopCarousel);
+  // Soporte desktop: Pausar con mouse
+  track.addEventListener('mouseenter', stopCarousel);
   track.addEventListener('mouseleave', startCarousel);
 
-  // Soporte táctil
+  // Soporte táctil (mobile)
   let startX = 0;
-  track.addEventListener('touchstart', (e) => startX = e.touches[0].clientX);
+  let moved = false;
+
+  track.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    stopCarousel();
+  });
+
+  track.addEventListener('touchmove', () => {
+    moved = true;
+  });
+
   track.addEventListener('touchend', (e) => {
     const deltaX = e.changedTouches[0].clientX - startX;
     if (Math.abs(deltaX) > 50) {
-      if (deltaX < 0) index = (index + 1) % slides.length;
-      else index = (index - 1 + slides.length) % slides.length;
+      if (deltaX < 0) {
+        index = (index + 1) % slides.length;
+      } else {
+        index = (index - 1 + slides.length) % slides.length;
+      }
       track.style.transform = `translateX(-${index * 100}%)`;
     }
+    moved = false;
+    startCarousel();
   });
 
   startCarousel();
 }
+
 
 // Mostrar estado de conexión
 function showConnectionStatus(connecting) {
