@@ -143,6 +143,9 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     'Cajas y canastas para vino',
     'Gaseosas y jugos',
     'Valle calchaquies',
+    'SIDRAS',
+    'Espumantes',
+    
   ].map(normalize);
 
   const filtered = productsData.filter(product => {
