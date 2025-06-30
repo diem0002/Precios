@@ -4,19 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#682854">
-    <title>Consulta de Bodegas</title>
+    <title>Consulta de Pecios</title>
     <link rel="icon" href="img/compañia de vinos logos_Mesa de trabajo 1.ico" type="image/png">
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  
 </head>
+
+
 <body>
   <img src="./img/compañia de vinos logos-03.png" alt="Logo de la vinoteca" class="logo">
 
-  <h1>Consulta de Productos por Bodega</h1>
+  <h1>CATÁLOGO INTERACTIVO DE VINOS</h1>
   
+  
+  <h1>PROMOS</h1>
   <div class="promo-carousel-wrapper">
   <div class="promo-carousel-track" id="promo-carousel-track">
     <img src="img/promos/Buhero_Promo.png" alt="Promo Buhero" />
@@ -39,8 +44,9 @@
   </div>
 
   <!-- Escáner QR -->
+   
   <div id="scanner-section">
-    <button id="startScanner" class="btn btn-scan">Iniciar Escáner QR</button>
+    <button id="startScanner" class="btn btn-scan">Escáner QR gondolas</button>
     <div class="scanner-container hidden" id="scannerContainer">
       <canvas id="scanner" class="hidden"></canvas>
       <video id="video" width="100%" autoplay playsinline class="hidden"></video>
@@ -94,6 +100,9 @@
       </tbody>
     </table>
   </div>
+<footer class="main-footer">
+  Compania de vinos 2025 &copy; by DM
+</footer>
 
   <script src="./js/sw-register.js"></script>
   <script src="./js/main.js"></script>

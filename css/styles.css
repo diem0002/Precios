@@ -16,7 +16,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif,'Inter', sans-serif;
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
@@ -29,12 +29,18 @@ body {
 }
 
 .logo {
+  border-radius: 10px;
   display: block;
   margin: 0 auto 15px;
   max-width: 100px;
   width: 100%;
   height: auto;
   filter: drop-shadow(2px 2px 3px var(--cosmic-2));
+  max-width: 200px;
+  transition: transform 0.3s ease;
+}
+.logo:hover {
+  transform: scale(1.05);
 }
 
 h1 {
@@ -146,7 +152,7 @@ td:nth-child(3) {
   color: var(--lola);
   padding: 10px 20px;
   border: none;
-  border-radius: 25px;
+  border-radius: 12px;
   cursor: pointer;
   margin: 5px;
   font-weight: 600;
@@ -169,7 +175,7 @@ td:nth-child(3) {
 }
 
 .btn-scan {
-  background-color: var(--au-chico);
+  background-color: var(--cosmic-2);
 }
 
 .btn-scan:hover {
@@ -254,11 +260,12 @@ td:nth-child(3) {
   text-align: left;
   position: sticky;
   top: 0;
+  
 }
 
 #products-table td {
   padding: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.041);
   vertical-align: middle;
 }
 
@@ -268,7 +275,7 @@ td:nth-child(3) {
 
 /* Efecto hover para filas */
 #products-table tr:hover td {
-  background-color: rgba(220, 205, 213, 0.3); /* --lola con transparencia */
+  background-color: rgb(241, 6, 132); /* --lola con transparencia */
 }
 
 /* Estilos específicos para columnas */
@@ -392,7 +399,7 @@ td:nth-child(3) {
   max-height: 180px;
   user-select: none;
   pointer-events: none;
-  background-color: rgba(255, 255, 255, 0);
+  background-color: rgba(247, 208, 255, 0);
   border-radius: 16px;
 }
 
@@ -403,3 +410,21 @@ td:nth-child(3) {
     max-height: 140px;
   }
 }
+
+.main-footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 50px;
+  font-size: 0.9rem;
+  color: var(--cosmic-2);
+  opacity: 0.8;
+}
+
+#products-table tr {
+  transition: background-color 0.3s ease;
+}
+.btn {
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+
