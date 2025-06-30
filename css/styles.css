@@ -275,7 +275,7 @@ td:nth-child(3) {
 
 /* Efecto hover para filas */
 #products-table tr:hover td {
-  background-color: rgb(241, 6, 132); /* --lola con transparencia */
+  background-color: rgba(111, 78, 116, 0.37); /* --lola con transparencia */
 }
 
 /* Estilos específicos para columnas */
