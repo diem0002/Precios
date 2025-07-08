@@ -97,7 +97,7 @@ function showConnectionStatus(connecting) {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadData();
-  setupCarousel();
+ 
 
   document.querySelectorAll('.price-filter').forEach(btn => {
     btn.addEventListener('click', () => {
