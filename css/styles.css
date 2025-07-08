@@ -379,6 +379,8 @@ td:nth-child(3) {
 
 
 /* === Carrusel Simple === */
+
+
 .promo-banner {
   width: 100%;
   max-width: 800px;
@@ -386,7 +388,14 @@ td:nth-child(3) {
   padding: 15px;
   border-radius: 16px;
   margin: 20px auto;
-  color: white;
+  color: rgb(255, 255, 255);
+}
+
+.promo-banner-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .promo-carousel-wrapper {
