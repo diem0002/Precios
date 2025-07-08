@@ -353,63 +353,13 @@ td:nth-child(3) {
   justify-content: center;
 }
 
-.carousel {
-  margin: 10px auto;
-  width: 100%;
-  max-width: 400px;       /* Límite de ancho */
-  height: auto;
-  border-radius: 16px;
-  overflow: hidden;
- 
-}
 
-.carousel img {
-  height: 180px;         /* <-- fijamos altura también aquí */
-  max-height: 180px;
-  object-fit: contain;
-  width: 100%;
-  display: block;
-  transition: opacity 0.5s ease-in-out;
-  background-color: rgba(255, 255, 255, 0);
-  border-radius: 16px;
-}
 
-.promo-carousel-wrapper {
-  width: 100%;
-  max-width: 800px;
-  overflow: hidden;
-  border-radius: 16px;
-  touch-action: pan-y; /* permite swipe horizontal sin bloquear el scroll */
-  margin-bottom: 20px;
-  position: relative;
-}
 
-.promo-carousel-track {
-  display: flex;
-  transition: transform 0.6s ease-in-out;
-  will-change: transform;
-  cursor: grab; /* para que se note que es interactivo en desktop */
-}
 
-.promo-carousel-track img {
-  width: 100%;
-  flex: 0 0 100%;
-  object-fit: contain; /* mantener proporción */
-  height: 180px;        /* <-- Cambiado de auto a valor controlado */
-  max-height: 180px;
-  user-select: none;
-  pointer-events: none;
-  background-color: rgba(247, 208, 255, 0);
-  border-radius: 16px;
-}
 
-@media (max-width: 480px) {
-  .promo-carousel-track img,
-  .carousel img {
-    height: 140px;
-    max-height: 140px;
-  }
-}
+
+
 
 .main-footer {
   margin-top: auto;
@@ -428,3 +378,107 @@ td:nth-child(3) {
 }
 
 
+/* === Promo Banner Mejorado === */
+.promo-banner {
+  width: 100%;
+  max-width: 800px;
+  background: linear-gradient(135deg, var(--finn), var(--cosmic-2));
+  padding: 20px;
+  border-radius: 16px;
+  margin: 20px auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.promo-banner-header h2 {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  text-align: center;
+  color: white;
+}
+
+.promo-carousel-wrapper {
+  width: 100%;
+  max-width: 800px;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 16px;
+  position: relative;
+}
+
+
+.promo-carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.promo-carousel-track img {
+  flex: 0 0 calc(100% / 3);
+  max-height: 140px; /* achica el alto visible */
+  width: 100%;
+  object-fit: contain;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.048);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+   margin-right: 5px;
+}
+
+
+.promo-indicators {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.promo-dot {
+  height: 10px;
+  width: 10px;
+  margin: 0 5px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+.promo-dot.active {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+
+
+.promo-carousel-wrapper {
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.062);
+  background: linear-gradient(145deg, var(--finn), var(--cosmic-2));
+  padding: 10px;
+  height: auto;
+  padding-bottom: 10px;
+}
+
+.promo-dot {
+  height: 12px;
+  width: 12px;
+  margin: 0 06px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.promo-dot.active {
+  background-color: #ffffff00;
+}
+
+@media (max-width: 768px) {
+  .promo-carousel-track img {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .promo-carousel-track img {
+    height: 100px;
+    flex: 0 0 calc(100% / 2); /* 2 por fila en celulares chicos */
+  }
+}

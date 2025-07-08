@@ -6,19 +6,53 @@ const scanHistory = [];
 
 function setupCarousel() {
   const track = document.getElementById('promo-carousel-track');
-  if (!track) return;
+  const indicatorsContainer = document.getElementById('promo-indicators');
+  if (!track || !indicatorsContainer) return;
 
-  const slides = track.querySelectorAll('img');
+  const visibleSlides = 3;
+  let slides = Array.from(track.querySelectorAll('img'));
+
+  // Clonar imágenes si el total no es múltiplo de 3
+  const totalSlides = slides.length;
+  const remainder = totalSlides % visibleSlides;
+  if (remainder !== 0) {
+    const clonesNeeded = visibleSlides - remainder;
+    for (let i = 0; i < clonesNeeded; i++) {
+      const clone = slides[i % totalSlides].cloneNode(true);
+      track.appendChild(clone);
+    }
+    slides = Array.from(track.querySelectorAll('img')); // Actualizar la lista
+  }
+
+  const totalGroups = slides.length / visibleSlides;
   let index = 0;
   let interval;
 
+  // Crear indicadores
+  indicatorsContainer.innerHTML = '';
+  for (let i = 0; i < totalGroups; i++) {
+    const dot = document.createElement('span');
+    dot.classList.add('promo-dot');
+    if (i === 0) dot.classList.add('active');
+    indicatorsContainer.appendChild(dot);
+  }
+
+  const dots = indicatorsContainer.querySelectorAll('.promo-dot');
+
+  function updateIndicators() {
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+    });
+  }
+
   function moveCarousel() {
-    index = (index + 1) % slides.length;
-    track.style.transform = `translateX(-${index * 100}%)`;
+    index = (index + 1) % totalGroups;
+    track.style.transform = `translateX(-${(100 / totalGroups) * index}%)`;
+    updateIndicators();
   }
 
   function startCarousel() {
-    stopCarousel(); // por seguridad, limpia primero
+    stopCarousel();
     interval = setInterval(moveCarousel, 4000);
   }
 
@@ -26,39 +60,34 @@ function setupCarousel() {
     if (interval) clearInterval(interval);
   }
 
-  // Soporte desktop: Pausar con mouse
+  // Eventos
   track.addEventListener('mouseenter', stopCarousel);
   track.addEventListener('mouseleave', startCarousel);
 
-  // Soporte táctil (mobile)
   let startX = 0;
-  let moved = false;
-
   track.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
     stopCarousel();
-  });
-
-  track.addEventListener('touchmove', () => {
-    moved = true;
   });
 
   track.addEventListener('touchend', (e) => {
     const deltaX = e.changedTouches[0].clientX - startX;
     if (Math.abs(deltaX) > 50) {
       if (deltaX < 0) {
-        index = (index + 1) % slides.length;
+        index = (index + 1) % totalGroups;
       } else {
-        index = (index - 1 + slides.length) % slides.length;
+        index = (index - 1 + totalGroups) % totalGroups;
       }
-      track.style.transform = `translateX(-${index * 100}%)`;
+      track.style.transform = `translateX(-${(100 / totalGroups) * index}%)`;
+      updateIndicators();
     }
-    moved = false;
     startCarousel();
   });
 
   startCarousel();
 }
+
+
 
 
 // Mostrar estado de conexión
