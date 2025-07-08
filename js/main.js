@@ -4,89 +4,83 @@ let productsData = [];
 let videoStream = null;
 const scanHistory = [];
 
-function setupCarousel() {
-  const track = document.getElementById('promo-carousel-track');
-  const indicatorsContainer = document.getElementById('promo-indicators');
-  if (!track || !indicatorsContainer) return;
+function setupSimpleCarousel() {
+  const container = document.querySelector('.promo-carousel-container');
+  const slides = document.querySelectorAll('.promo-slide');
+  const dots = document.querySelectorAll('.carousel-dot');
+  
+  if (!container || slides.length === 0) return;
 
-  const visibleSlides = 3;
-  let slides = Array.from(track.querySelectorAll('img'));
-
-  // Clonar imágenes si el total no es múltiplo de 3
-  const totalSlides = slides.length;
-  const remainder = totalSlides % visibleSlides;
-  if (remainder !== 0) {
-    const clonesNeeded = visibleSlides - remainder;
-    for (let i = 0; i < clonesNeeded; i++) {
-      const clone = slides[i % totalSlides].cloneNode(true);
-      track.appendChild(clone);
-    }
-    slides = Array.from(track.querySelectorAll('img')); // Actualizar la lista
-  }
-
-  const totalGroups = slides.length / visibleSlides;
-  let index = 0;
+  let currentIndex = 0;
   let interval;
+  const slidesToShow = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 1 : 2) : 3;
 
-  // Crear indicadores
-  indicatorsContainer.innerHTML = '';
-  for (let i = 0; i < totalGroups; i++) {
-    const dot = document.createElement('span');
-    dot.classList.add('promo-dot');
-    if (i === 0) dot.classList.add('active');
-    indicatorsContainer.appendChild(dot);
-  }
+  // Clonar slides para efecto infinito
+  const cloneSlides = Array.from(slides).map(slide => slide.cloneNode(true));
+  cloneSlides.forEach(slide => container.appendChild(slide));
 
-  const dots = indicatorsContainer.querySelectorAll('.promo-dot');
-
-  function updateIndicators() {
+  function updateCarousel() {
+    const slideWidth = 100 / slidesToShow;
+    const offset = -currentIndex * slideWidth;
+    container.style.transform = `translateX(${offset}%)`;
+    
+    // Actualizar indicadores
+    const activeDot = currentIndex % dots.length;
     dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === index);
+      dot.classList.toggle('active', i === activeDot);
     });
   }
 
-  function moveCarousel() {
-    index = (index + 1) % totalGroups;
-    track.style.transform = `translateX(-${(100 / totalGroups) * index}%)`;
-    updateIndicators();
+  function nextSlide() {
+    currentIndex++;
+    if (currentIndex >= slides.length) {
+      // Reset suave al llegar al final
+      currentIndex = 0;
+      container.style.transition = 'none';
+      updateCarousel();
+      setTimeout(() => {
+        container.style.transition = 'transform 0.5s ease';
+        nextSlide();
+      }, 10);
+    } else {
+      updateCarousel();
+    }
   }
 
   function startCarousel() {
     stopCarousel();
-    interval = setInterval(moveCarousel, 4000);
+    interval = setInterval(nextSlide, 5000);
   }
 
   function stopCarousel() {
     if (interval) clearInterval(interval);
   }
 
-  // Eventos
-  track.addEventListener('mouseenter', stopCarousel);
-  track.addEventListener('mouseleave', startCarousel);
-
-  let startX = 0;
-  track.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    stopCarousel();
+  // Click en los dots
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      currentIndex = i;
+      updateCarousel();
+    });
   });
 
-  track.addEventListener('touchend', (e) => {
-    const deltaX = e.changedTouches[0].clientX - startX;
-    if (Math.abs(deltaX) > 50) {
-      if (deltaX < 0) {
-        index = (index + 1) % totalGroups;
-      } else {
-        index = (index - 1 + totalGroups) % totalGroups;
-      }
-      track.style.transform = `translateX(-${(100 / totalGroups) * index}%)`;
-      updateIndicators();
+  // Manejar resize
+  function handleResize() {
+    const newSlidesToShow = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 1 : 2) : 3;
+    if (newSlidesToShow !== slidesToShow) {
+      currentIndex = 0;
+      updateCarousel();
     }
-    startCarousel();
-  });
+  }
 
+  // Iniciar
+  updateCarousel();
   startCarousel();
+  window.addEventListener('resize', handleResize);
 }
 
+// Llamar al cargar la página
+window.addEventListener('DOMContentLoaded', setupSimpleCarousel);
 
 
 
