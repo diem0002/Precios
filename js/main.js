@@ -111,6 +111,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('toggleManualSearch')?.addEventListener('click', toggleManualSearch);
   document.getElementById('manualSearchBtn')?.addEventListener('click', manualSearch);
 });
+  document.getElementById('retryScanBtn').addEventListener('click', () => {
+  document.getElementById('retryScanBtn').classList.add('hidden');
+  document.getElementById('result').textContent = '';
+  document.getElementById('startScanner').click();
+});
 
 function normalize(text) {
   return text?.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -320,10 +325,12 @@ function tick() {
     });
 
     if (code) {
-      stopScanner();
-      showProducts(code.data);
-      updateHistory(code.data);
-    }
+  stopScanner();
+  showProducts(code.data);
+  updateHistory(code.data);
+  document.getElementById('retryScanBtn').classList.remove('hidden');
+}
+
   }
 
   requestAnimationFrame(tick);
