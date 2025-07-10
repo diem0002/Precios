@@ -460,3 +460,54 @@ function renderHistory() {
     container.classList.remove('hidden');
   }
 }
+
+
+// Escáner de etiquetas con Tesseract.js
+document.getElementById('scanLabelBtn').addEventListener('click', async () => {
+  const video = document.getElementById('labelVideo');
+  const canvas = document.getElementById('labelCanvas');
+  const resultBox = document.getElementById('labelResult');
+
+  resultBox.textContent = 'Iniciando cámara...';
+  resultBox.classList.remove('hidden');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = stream;
+    video.classList.remove('hidden');
+
+    // Esperamos 3 segundos para que enfoque bien
+    setTimeout(async () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Apagamos la cámara
+      stream.getTracks().forEach(track => track.stop());
+      video.classList.add('hidden');
+
+      resultBox.textContent = 'Leyendo texto de la imagen...';
+
+      const { data: { text } } = await Tesseract.recognize(canvas, 'spa', {
+        logger: m => console.log(m),
+      });
+
+      const cleaned = text.trim();
+      resultBox.innerHTML = `<strong>Texto detectado:</strong><br>${cleaned}`;
+      
+      if (cleaned.length > 3) {
+        setTimeout(() => {
+          const query = `${cleaned} vino`;
+          window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        }, 1500);
+      } else {
+        resultBox.innerHTML = 'No se detectó texto válido. Intentalo de nuevo.';
+      }
+
+    }, 3000); // Tiempo para enfocar
+  } catch (error) {
+    resultBox.textContent = '❌ No se pudo acceder a la cámara.';
+    console.error(error);
+  }
+});

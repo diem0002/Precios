@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+
   
 </head>
 
@@ -78,6 +80,17 @@
       <button id="stopScanner" class="btn">Detener Escáner</button>
     </div>
   </div>
+
+<!-- Escáner etiqueta -->
+  <h2>📷 Escaneo de Etiqueta</h2>
+<button id="scanLabelBtn" class="btn">📸 Escanear Etiqueta</button>
+
+<video id="labelVideo" autoplay playsinline width="100%" class="hidden"></video>
+<canvas id="labelCanvas" class="hidden"></canvas>
+
+<div id="labelResult" class="result-box hidden">
+  <p>Esperando resultado...</p>
+</div>
 
   <!-- Búsqueda manual -->
   <div id="manual-search">
