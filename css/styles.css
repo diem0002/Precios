@@ -20,36 +20,67 @@ body {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background: var(--lola);
+  background-color: var(--lola);
   color: var(--tawny-port);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 0;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(227, 10, 119, 0.1), rgba(60, 22, 41, 0.379)), 
+              url('/img/fondo-tablones-rosados.png') center center fixed;
+  background-size: cover;
+  z-index: -1;
+}
+
+
+
+
+
 .logo {
-  border-radius: 10px;
+  border-radius: 14px;
   display: block;
   margin: 0 auto 15px;
-  max-width: 100px;
+  max-width: 200px;
   width: 100%;
   height: auto;
-  filter: drop-shadow(2px 2px 3px var(--cosmic-2));
-  max-width: 200px;
-  transition: transform 0.3s ease;
+  transform: translateY(-6px) scale(1.06);
+  box-shadow: 0 16px 30px rgb(44, 3, 18);
+  
 }
-.logo:hover {
-  transform: scale(1.05);
-}
+
+
+
 
 h1 {
   text-align: center;
-  color: var(--finn);
-  margin-bottom: 25px;
-  font-weight: 700;
+  margin-bottom: 20px;
+  font-weight: 600;
   letter-spacing: 1.2px;
+  background: linear-gradient(90deg, #a40537, #49012a);
+  background-clip: text;              /* estándar */
+  -webkit-background-clip: text;      /* prefijo para WebKit */
+  color: transparent;                 /* estándar */
+  -webkit-text-fill-color: transparent; /* necesario para WebKit */
+  animation: shine 3s linear infinite;
 }
+
+@keyframes shine {
+  0% { background-position: 0% }
+  100% { background-position: 100% }
+}
+
+
 
 #connection-status {
   padding: 10px;
