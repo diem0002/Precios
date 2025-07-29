@@ -105,24 +105,25 @@ function initCarousel() {
 
 // Configuración de event listeners
 function setupEventListeners() {
-  // Filtros de precio
-  document.querySelectorAll('.price-filter').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const [min, max] = btn.dataset.range.split('-').map(Number);
+  // Filtros de precio - CORREGIDO
+  document.querySelectorAll('.btn-filter').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const range = this.getAttribute('data-range');
+      const [min, max] = range.split('-').map(Number);
       showRandomProductsByPrice(min, max);
     });
   });
 
-  // Scanner QR
-  document.getElementById('startScanner')?.addEventListener('click', startScanner);
-  document.getElementById('stopScanner')?.addEventListener('click', stopScanner);
+  // Scanner QR - CORREGIDO
+  document.getElementById('startScanner').addEventListener('click', startScanner);
+  document.getElementById('stopScanner').addEventListener('click', stopScanner);
   
   // Búsqueda manual
-  document.getElementById('toggleManualSearch')?.addEventListener('click', toggleManualSearch);
-  document.getElementById('manualSearchBtn')?.addEventListener('click', manualSearch);
+  document.getElementById('toggleManualSearch').addEventListener('click', toggleManualSearch);
+  document.getElementById('manualSearchBtn').addEventListener('click', manualSearch);
   
   // Mejorar accesibilidad del input
-  document.getElementById('manualBodegaInput')?.addEventListener('keypress', (e) => {
+  document.getElementById('manualBodegaInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') manualSearch();
   });
 }
@@ -257,9 +258,9 @@ function updateLastUpdateTime() {
   document.getElementById('last-update-time').textContent = new Date().toLocaleString();
 }
 
-// Filtrado por precio
+// Filtrado por precio - FUNCIÓN CORREGIDA
 function showRandomProductsByPrice(minPrice, maxPrice) {
-  if (!AppState.products.length) {
+  if (!AppState.products || AppState.products.length === 0) {
     document.getElementById('result').textContent = 'Cargando datos... Por favor espera.';
     loadData();
     return;
@@ -293,8 +294,17 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     );
   });
 
+  if (filtered.length === 0) {
+    displayProducts(
+      [],
+      `Vinos entre $${minPrice.toLocaleString()} y $${maxPrice.toLocaleString()}`,
+      'No se encontraron productos en este rango de precios'
+    );
+    return;
+  }
+
   const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, 10).sort((a, b) => {
+  const selected = shuffled.slice(0, Math.min(10, shuffled.length)).sort((a, b) => {
     const priceA = parseInt(a.Precio?.replace(/\D/g, '')) || 0;
     const priceB = parseInt(b.Precio?.replace(/\D/g, '')) || 0;
     return priceA - priceB;
@@ -342,7 +352,7 @@ function displayProducts(products, title, subtitle) {
   updateLastUpdateTime();
 }
 
-// Scanner QR - Versión mejorada para evitar doble cámara
+// Scanner QR - FUNCIÓN CORREGIDA
 function startScanner() {
   if (AppState.isScanning) return;
   
@@ -356,6 +366,7 @@ function startScanner() {
   // Limpiar cualquier stream existente
   if (AppState.videoStream) {
     AppState.videoStream.getTracks().forEach(track => track.stop());
+    AppState.videoStream = null;
   }
 
   navigator.mediaDevices.getUserMedia({ 
@@ -381,20 +392,28 @@ function startScanner() {
     })
     .catch(err => {
       console.error("Error al acceder a la cámara:", err);
+      stopScanner();
       document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
-      AppState.isScanning = false;
     });
 }
 
+// FUNCIÓN STOP SCANNER CORREGIDA
 function stopScanner() {
   if (AppState.videoStream) {
-    AppState.videoStream.getTracks().forEach(track => track.stop());
+    AppState.videoStream.getTracks().forEach(track => {
+      track.stop();
+    });
     AppState.videoStream = null;
   }
 
-  document.getElementById('scannerContainer').classList.add('hidden');
-  document.getElementById('startScanner').classList.remove('hidden');
-  document.getElementById('video').classList.add('hidden');
+  const scannerContainer = document.getElementById('scannerContainer');
+  const video = document.getElementById('video');
+  const startBtn = document.getElementById('startScanner');
+
+  if (scannerContainer) scannerContainer.classList.add('hidden');
+  if (video) video.classList.add('hidden');
+  if (startBtn) startBtn.classList.remove('hidden');
+  
   AppState.isScanning = false;
 }
 
@@ -405,7 +424,7 @@ function scanQR() {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+  if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -463,7 +482,7 @@ function manualSearch() {
 
 // Búsqueda mejorada (en nombre Y bodega)
 function searchProducts(searchTerm) {
-  if (!AppState.products.length) {
+  if (!AppState.products || AppState.products.length === 0) {
     document.getElementById('result').textContent = 'Cargando datos... Por favor espera.';
     loadData();
     return [];

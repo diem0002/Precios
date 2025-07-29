@@ -564,7 +564,6 @@ body {
   }
 }
 
-
 /* Mensajes de error */
 .error-message {
   background-color: #ffebee;
@@ -578,36 +577,4 @@ body {
 .error-message p {
   margin-bottom: var(--space-sm);
   font-weight: 500;
-}
-
-/* Estado de conexión */
-.connection-status {
-  background-color: #e3f2fd;
-  border-left: 4px solid #2196f3;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--border-radius-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
-}
-
-.connection-status p {
-  color: #1976d2;
-  font-weight: 500;
-  margin: 0;
-}
-
-/* Spinner de carga */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(25, 118, 210, 0.3);
-  border-radius: 50%;
-  border-top-color: #1976d2;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
