@@ -1,3 +1,4 @@
+// Configuración de la URL de la hoja de cálculo
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5JA7l3_7kg8Eg0oXDaZYogbP9kxVzJfvypjbiUz-B4pOuUz-bHzAteAyRjbaYNQ/pub?output=csv';
 
 // Estado de la aplicación
@@ -5,14 +6,23 @@ const AppState = {
   products: [],
   scanHistory: [],
   videoStream: null,
-  currentCarouselInterval: null
+  currentCarouselInterval: null,
+  isScanning: false,
+  retryCount: 0,
+  MAX_RETRIES: 5,
+  connectionActive: false
 };
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-  initCarousel();
-  loadData();
-  setupEventListeners();
+  try {
+    initCarousel();
+    loadData();
+    setupEventListeners();
+  } catch (error) {
+    console.error('Error en la inicialización:', error);
+    showError('Error al iniciar la aplicación. Por favor recarga la página.');
+  }
 });
 
 // Configuración del carrusel
@@ -122,9 +132,138 @@ function normalize(text) {
   return text?.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+// Función mejorada para cargar datos
+async function loadData() {
+  if (AppState.connectionActive) return;
+  
+  AppState.connectionActive = true;
+  showConnectionStatus(true);
+  document.getElementById('loading').classList.remove('hidden');
+  
+  try {
+    // Añadir parámetro de caché aleatorio para evitar problemas
+    const cacheBuster = `&cache=${Date.now()}`;
+    const response = await fetch(`${SHEET_URL}${cacheBuster}`, {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const csvData = await response.text();
+
+    // Verificar que los datos no estén vacíos
+    if (!csvData || csvData.trim().length === 0) {
+      throw new Error('El archivo CSV está vacío');
+    }
+
+    // Parsear los datos con PapaParse
+    Papa.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        if (results.errors.length > 0) {
+          console.warn('Errores de parseo:', results.errors);
+        }
+        
+        // Verificar que hay datos válidos
+        if (!results.data || results.data.length === 0) {
+          throw new Error('No se encontraron datos válidos en el CSV');
+        }
+
+        AppState.products = results.data.filter(item => 
+          item.Producto && item.Bodega && item.Precio
+        );
+        
+        document.getElementById('loading').classList.add('hidden');
+        showConnectionStatus(false);
+        updateLastUpdateTime();
+        AppState.retryCount = 0; // Resetear contador de reintentos
+        AppState.connectionActive = false;
+        
+        // Mostrar mensaje de éxito
+        document.getElementById('result').textContent = 
+          `Datos cargados correctamente. ${AppState.products.length} productos disponibles.`;
+      },
+      error: function(error) {
+        throw new Error(`Error al parsear CSV: ${error.message}`);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+    AppState.connectionActive = false;
+    handleDataError(error);
+  }
+}
+
+// Manejo mejorado de errores
+function handleDataError(error) {
+  document.getElementById('loading').classList.add('hidden');
+  showConnectionStatus(true);
+  
+  AppState.retryCount++;
+  
+  if (AppState.retryCount >= AppState.MAX_RETRIES) {
+    showError(`No se pudo conectar con el servidor. Error: ${error.message}`);
+    return;
+  }
+  
+  const delay = Math.min(5000, 1000 * Math.pow(2, AppState.retryCount)); // Retry con backoff exponencial
+  document.getElementById('result').textContent = 
+    `Error al cargar datos. Reintentando en ${delay/1000} segundos... (Intento ${AppState.retryCount}/${AppState.MAX_RETRIES})`;
+  
+  setTimeout(loadData, delay);
+}
+
+// Función para mostrar errores
+function showError(message) {
+  const errorElement = document.createElement('div');
+  errorElement.className = 'error-message';
+  errorElement.innerHTML = `
+    <p>❌ ${message}</p>
+    <button id="retryButton" class="btn btn-primary">Reintentar</button>
+  `;
+  
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('result').appendChild(errorElement);
+  
+  document.getElementById('retryButton').addEventListener('click', () => {
+    AppState.retryCount = 0;
+    loadData();
+  });
+}
+
+// Mostrar estado de conexión
+function showConnectionStatus(connecting) {
+  const statusElement = document.getElementById('connection-status');
+  if (connecting) {
+    statusElement.classList.remove('hidden');
+  } else {
+    statusElement.classList.add('hidden');
+  }
+}
+
+// Actualizar marca de tiempo
+function updateLastUpdateTime() {
+  document.getElementById('last-update-time').textContent = new Date().toLocaleString();
+}
+
 // Filtrado por precio
 function showRandomProductsByPrice(minPrice, maxPrice) {
-  if (!AppState.products.length) return;
+  if (!AppState.products.length) {
+    document.getElementById('result').textContent = 'Cargando datos... Por favor espera.';
+    loadData();
+    return;
+  }
 
   const excludedBodegas = [
     'accesorios', 'aceites de oliva', 'agua bidon', 'agua y soda', 'aperitivos',
@@ -177,62 +316,6 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
   );
 }
 
-// Carga de datos
-async function loadData() {
-  showConnectionStatus(true);
-  document.getElementById('loading')?.classList.remove('hidden');
-
-  try {
-    const timestamp = Date.now();
-    const response = await fetch(`${SHEET_URL}&timestamp=${timestamp}`);
-    
-    if (!response.ok) throw new Error('Error en la respuesta del servidor');
-    
-    const csvData = await response.text();
-
-    Papa.parse(csvData, {
-      header: true,
-      complete: (results) => {
-        AppState.products = results.data;
-        document.getElementById('loading')?.classList.add('hidden');
-        showConnectionStatus(false);
-        updateLastUpdateTime();
-      },
-      error: (error) => {
-        console.error('Error al parsear datos:', error);
-        handleDataError();
-      }
-    });
-
-  } catch (error) {
-    console.error('Error al cargar datos:', error);
-    handleDataError();
-  }
-}
-
-// Manejo de errores
-function handleDataError() {
-  document.getElementById('loading')?.classList.add('hidden');
-  showConnectionStatus(true);
-  document.getElementById('result').textContent = 'Error al cargar datos. Reconectando...';
-  setTimeout(loadData, 5000);
-}
-
-// Mostrar estado de conexión
-function showConnectionStatus(connecting) {
-  const statusElement = document.getElementById('connection-status');
-  if (connecting) {
-    statusElement.classList.remove('hidden');
-  } else {
-    statusElement.classList.add('hidden');
-  }
-}
-
-// Actualizar marca de tiempo
-function updateLastUpdateTime() {
-  document.getElementById('last-update-time').textContent = new Date().toLocaleString();
-}
-
 // Función genérica para mostrar productos
 function displayProducts(products, title, subtitle) {
   document.getElementById('bodega-name').textContent = title;
@@ -259,25 +342,47 @@ function displayProducts(products, title, subtitle) {
   updateLastUpdateTime();
 }
 
-// Scanner QR
+// Scanner QR - Versión mejorada para evitar doble cámara
 function startScanner() {
+  if (AppState.isScanning) return;
+  
+  AppState.isScanning = true;
   const scannerContainer = document.getElementById('scannerContainer');
   const video = document.getElementById('video');
 
   scannerContainer.classList.remove('hidden');
   document.getElementById('startScanner').classList.add('hidden');
 
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+  // Limpiar cualquier stream existente
+  if (AppState.videoStream) {
+    AppState.videoStream.getTracks().forEach(track => track.stop());
+  }
+
+  navigator.mediaDevices.getUserMedia({ 
+    video: { 
+      facingMode: "environment",
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    } 
+  })
     .then(stream => {
       AppState.videoStream = stream;
       video.srcObject = stream;
       video.classList.remove('hidden');
-      video.play();
+      
+      video.onloadedmetadata = () => {
+        video.play().catch(err => {
+          console.error("Error al reproducir video:", err);
+          stopScanner();
+        });
+      };
+      
       requestAnimationFrame(scanQR);
     })
     .catch(err => {
       console.error("Error al acceder a la cámara:", err);
       document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
+      AppState.isScanning = false;
     });
 }
 
@@ -290,15 +395,17 @@ function stopScanner() {
   document.getElementById('scannerContainer').classList.add('hidden');
   document.getElementById('startScanner').classList.remove('hidden');
   document.getElementById('video').classList.add('hidden');
+  AppState.isScanning = false;
 }
 
 function scanQR() {
+  if (!AppState.isScanning) return;
+
   const video = document.getElementById('video');
-  const canvas = document.getElementById('scanner');
+  const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
   if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.hidden = false;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -315,7 +422,7 @@ function scanQR() {
     }
   }
 
-  if (AppState.videoStream) {
+  if (AppState.isScanning) {
     requestAnimationFrame(scanQR);
   }
 }
@@ -356,7 +463,11 @@ function manualSearch() {
 
 // Búsqueda mejorada (en nombre Y bodega)
 function searchProducts(searchTerm) {
-  if (!AppState.products.length) return [];
+  if (!AppState.products.length) {
+    document.getElementById('result').textContent = 'Cargando datos... Por favor espera.';
+    loadData();
+    return [];
+  }
   
   const searchTermLower = normalize(searchTerm);
   
