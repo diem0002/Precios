@@ -1,10 +1,22 @@
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5JA7l3_7kg8Eg0oXDaZYogbP9kxVzJfvypjbiUz-B4pOuUz-bHzAteAyRjbaYNQ/pub?output=csv';
 
-let productsData = [];
-let videoStream = null;
-const scanHistory = [];
+// Estado de la aplicación
+const AppState = {
+  products: [],
+  scanHistory: [],
+  videoStream: null,
+  currentCarouselInterval: null
+};
 
-function setupSimpleCarousel() {
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+  initCarousel();
+  loadData();
+  setupEventListeners();
+});
+
+// Configuración del carrusel
+function initCarousel() {
   const container = document.querySelector('.promo-carousel-container');
   const slides = document.querySelectorAll('.promo-slide');
   const dots = document.querySelectorAll('.carousel-dot');
@@ -12,19 +24,22 @@ function setupSimpleCarousel() {
   if (!container || slides.length === 0) return;
 
   let currentIndex = 0;
-  let interval;
-  const slidesToShow = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 1 : 2) : 3;
+  const slidesToShow = calculateSlidesToShow();
 
   // Clonar slides para efecto infinito
   const cloneSlides = Array.from(slides).map(slide => slide.cloneNode(true));
   cloneSlides.forEach(slide => container.appendChild(slide));
+
+  function calculateSlidesToShow() {
+    return window.innerWidth <= 768 ? 
+      (window.innerWidth <= 480 ? 1 : 2) : 3;
+  }
 
   function updateCarousel() {
     const slideWidth = 100 / slidesToShow;
     const offset = -currentIndex * slideWidth;
     container.style.transform = `translateX(${offset}%)`;
     
-    // Actualizar indicadores
     const activeDot = currentIndex % dots.length;
     dots.forEach((dot, i) => {
       dot.classList.toggle('active', i === activeDot);
@@ -34,7 +49,6 @@ function setupSimpleCarousel() {
   function nextSlide() {
     currentIndex++;
     if (currentIndex >= slides.length) {
-      // Reset suave al llegar al final
       currentIndex = 0;
       container.style.transition = 'none';
       updateCarousel();
@@ -49,14 +63,16 @@ function setupSimpleCarousel() {
 
   function startCarousel() {
     stopCarousel();
-    interval = setInterval(nextSlide, 5000);
+    AppState.currentCarouselInterval = setInterval(nextSlide, 5000);
   }
 
   function stopCarousel() {
-    if (interval) clearInterval(interval);
+    if (AppState.currentCarouselInterval) {
+      clearInterval(AppState.currentCarouselInterval);
+    }
   }
 
-  // Click en los dots
+  // Event listeners
   dots.forEach((dot, i) => {
     dot.addEventListener('click', () => {
       currentIndex = i;
@@ -64,41 +80,22 @@ function setupSimpleCarousel() {
     });
   });
 
-  // Manejar resize
-  function handleResize() {
-    const newSlidesToShow = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 1 : 2) : 3;
+  window.addEventListener('resize', () => {
+    const newSlidesToShow = calculateSlidesToShow();
     if (newSlidesToShow !== slidesToShow) {
       currentIndex = 0;
       updateCarousel();
     }
-  }
+  });
 
   // Iniciar
   updateCarousel();
   startCarousel();
-  window.addEventListener('resize', handleResize);
 }
 
-// Llamar al cargar la página
-window.addEventListener('DOMContentLoaded', setupSimpleCarousel);
-
-
-
-// Mostrar estado de conexión
-function showConnectionStatus(connecting) {
-  const statusElement = document.getElementById('connection-status');
-  if (connecting) {
-    statusElement.classList.remove('hidden');
-    statusElement.innerHTML = '<p>Conectando al servidor para obtener datos actualizados...</p>';
-  } else {
-    statusElement.classList.add('hidden');
-  }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  loadData();
- 
-
+// Configuración de event listeners
+function setupEventListeners() {
+  // Filtros de precio
   document.querySelectorAll('.price-filter').forEach(btn => {
     btn.addEventListener('click', () => {
       const [min, max] = btn.dataset.range.split('-').map(Number);
@@ -106,72 +103,44 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Scanner QR
   document.getElementById('startScanner')?.addEventListener('click', startScanner);
   document.getElementById('stopScanner')?.addEventListener('click', stopScanner);
+  
+  // Búsqueda manual
   document.getElementById('toggleManualSearch')?.addEventListener('click', toggleManualSearch);
   document.getElementById('manualSearchBtn')?.addEventListener('click', manualSearch);
-});
+  
+  // Mejorar accesibilidad del input
+  document.getElementById('manualBodegaInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') manualSearch();
+  });
+}
 
+// Normalización de texto para búsquedas
 function normalize(text) {
   return text?.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+// Filtrado por precio
 function showRandomProductsByPrice(minPrice, maxPrice) {
-  if (!productsData.length) return;
+  if (!AppState.products.length) return;
 
-  const excludedBodegas = ['accesorios',
-    'aceites de oliva',
-    'agua bidon',
-    'agua y soda',
-    'aperitivos',
-    'bebidas fuertes',
-    'blsas friselina',
-    'cajas y canastas para vino',
-    'cerveza botella x330',
-    'cervezas importadas latas',
-    'cervezas nacionales latas',
-    'estuches cerveza',
-    'grolsch ( porron ceramico)',
-    'licores',
-    'pronto baggio 1lt',
-    'whiskys importados',
-    'whiskys nacionales',
-    'damajuanas',
-    'aperitivos',
-    'estuches',
-    'pulpas',
-    'leches latte baggio',
-    'lays (snacks)',
-    'botellas retornables',
-    'cerveza botella x330',
-    'especias',
-    'encurtidos vanoli',
-    'escabeches',
-    'budines',
-    'GASEOSAS Y ENERGISANTES',
-    'ESTUCHES CON COPAS',
-    'Copas individuales',
-    'HIELERAS',
-    'PRODUCTOS ALMACEN',
-    'SNACKS',
-    'BOTANICOS',
-    'PROMOS',
-    'VINOS PARA COCINAR',
-    'Estuches Copas',
-    'OLIVARES DEL CESAR',
-    'PRONTO BAGGIO 1LT',
-    'CIGARROS',
-    '9 de oro',
-    'Doña chola',
-    'Cajas y canastas para vino',
-    'Gaseosas y jugos',
-    'Valle calchaquies',
-    'SIDRAS',
-    'Espumantes',
-    
+  const excludedBodegas = [
+    'accesorios', 'aceites de oliva', 'agua bidon', 'agua y soda', 'aperitivos',
+    'bebidas fuertes', 'blsas friselina', 'cajas y canastas para vino',
+    'cerveza botella x330', 'cervezas importadas latas', 'cervezas nacionales latas',
+    'estuches cerveza', 'grolsch ( porron ceramico)', 'licores', 'pronto baggio 1lt',
+    'whiskys importados', 'whiskys nacionales', 'damajuanas', 'estuches', 'pulpas',
+    'leches latte baggio', 'lays (snacks)', 'botellas retornables', 'especias',
+    'encurtidos vanoli', 'escabeches', 'budines', 'gaseosas y energisantes',
+    'estuches con copas', 'copas individuales', 'hieleras', 'productos almacen',
+    'snacks', 'botanicos', 'promos', 'vinos para cocinar', 'estuches copas',
+    'olivares del cesar', 'cigarros', '9 de oro', 'doña chola',
+    'valle calchaquies', 'sidras', 'espumantes'
   ].map(normalize);
 
-  const filtered = productsData.filter(product => {
+  const filtered = AppState.products.filter(product => {
     const precioRaw = product.Precio?.replace(/\D/g, '');
     const precio = parseInt(precioRaw);
     const bodega = normalize(product.Bodega || '');
@@ -192,60 +161,44 @@ function showRandomProductsByPrice(minPrice, maxPrice) {
     return priceA - priceB;
   });
 
-  document.getElementById('products-container').classList.remove('hidden');
   let rangoTexto = '';
-if (minPrice === 0) {
-  rangoTexto = `Vinos hasta $${maxPrice.toLocaleString()}`;
-} else if (maxPrice === 999999) {
-  rangoTexto = `Vinos desde $${minPrice.toLocaleString()}`;
-} else {
-  rangoTexto = `Vinos entre $${minPrice.toLocaleString()} y $${maxPrice.toLocaleString()}`;
-}
-document.getElementById('bodega-name').textContent = rangoTexto;
-
-
-  document.getElementById('result').textContent = `Mostrando ${selected.length} vinos en ese rango de precios.`;
-
-  const productsBody = document.getElementById('products-body');
-  productsBody.innerHTML = '';
-
-  if (!selected.length) {
-    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron vinos en ese rango</td></tr>';
-    return;
+  if (minPrice === 0) {
+    rangoTexto = `Vinos hasta $${maxPrice.toLocaleString()}`;
+  } else if (maxPrice === 999999) {
+    rangoTexto = `Vinos desde $${minPrice.toLocaleString()}`;
+  } else {
+    rangoTexto = `Vinos entre $${minPrice.toLocaleString()} y $${maxPrice.toLocaleString()}`;
   }
 
-  selected.forEach(product => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.Producto || 'N/A'}</td>
-      <td>${product.Bodega || 'N/A'}</td>
-      <td>${product.Precio || 'N/A'}</td>
-    `;
-    productsBody.appendChild(row);
-  });
+  displayProducts(
+    selected,
+    rangoTexto,
+    `Mostrando ${selected.length} vinos en ese rango de precios`
+  );
 }
 
-
+// Carga de datos
 async function loadData() {
   showConnectionStatus(true);
   document.getElementById('loading')?.classList.remove('hidden');
 
   try {
-    const timestamp = new Date().getTime();
+    const timestamp = Date.now();
     const response = await fetch(`${SHEET_URL}&timestamp=${timestamp}`);
+    
     if (!response.ok) throw new Error('Error en la respuesta del servidor');
-
+    
     const csvData = await response.text();
 
     Papa.parse(csvData, {
       header: true,
-      complete: function (results) {
-        productsData = results.data;
+      complete: (results) => {
+        AppState.products = results.data;
         document.getElementById('loading')?.classList.add('hidden');
         showConnectionStatus(false);
         updateLastUpdateTime();
       },
-      error: function (error) {
+      error: (error) => {
         console.error('Error al parsear datos:', error);
         handleDataError();
       }
@@ -257,11 +210,7 @@ async function loadData() {
   }
 }
 
-function updateLastUpdateTime() {
-  const now = new Date();
-  document.getElementById('last-update-time').textContent = now.toLocaleString();
-}
-
+// Manejo de errores
 function handleDataError() {
   document.getElementById('loading')?.classList.add('hidden');
   showConnectionStatus(true);
@@ -269,7 +218,48 @@ function handleDataError() {
   setTimeout(loadData, 5000);
 }
 
-// Escáner QR
+// Mostrar estado de conexión
+function showConnectionStatus(connecting) {
+  const statusElement = document.getElementById('connection-status');
+  if (connecting) {
+    statusElement.classList.remove('hidden');
+  } else {
+    statusElement.classList.add('hidden');
+  }
+}
+
+// Actualizar marca de tiempo
+function updateLastUpdateTime() {
+  document.getElementById('last-update-time').textContent = new Date().toLocaleString();
+}
+
+// Función genérica para mostrar productos
+function displayProducts(products, title, subtitle) {
+  document.getElementById('bodega-name').textContent = title;
+  document.getElementById('result').textContent = subtitle;
+
+  const productsBody = document.getElementById('products-body');
+  productsBody.innerHTML = '';
+
+  if (!products.length) {
+    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos</td></tr>';
+  } else {
+    products.forEach(product => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${product.Producto || 'N/A'}</td>
+        <td>${product.Bodega || 'N/A'}</td>
+        <td>${product.Precio || 'N/A'}</td>
+      `;
+      productsBody.appendChild(row);
+    });
+  }
+
+  document.getElementById('products-container').classList.remove('hidden');
+  updateLastUpdateTime();
+}
+
+// Scanner QR
 function startScanner() {
   const scannerContainer = document.getElementById('scannerContainer');
   const video = document.getElementById('video');
@@ -278,24 +268,23 @@ function startScanner() {
   document.getElementById('startScanner').classList.add('hidden');
 
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(function (stream) {
-      videoStream = stream;
+    .then(stream => {
+      AppState.videoStream = stream;
       video.srcObject = stream;
       video.classList.remove('hidden');
       video.play();
-
-      requestAnimationFrame(tick);
+      requestAnimationFrame(scanQR);
     })
-    .catch(function (err) {
+    .catch(err => {
       console.error("Error al acceder a la cámara:", err);
       document.getElementById('result').textContent = "No se pudo acceder a la cámara. Asegúrate de permitir el acceso.";
     });
 }
 
 function stopScanner() {
-  if (videoStream) {
-    videoStream.getTracks().forEach(track => track.stop());
-    videoStream = null;
+  if (AppState.videoStream) {
+    AppState.videoStream.getTracks().forEach(track => track.stop());
+    AppState.videoStream = null;
   }
 
   document.getElementById('scannerContainer').classList.add('hidden');
@@ -303,7 +292,7 @@ function stopScanner() {
   document.getElementById('video').classList.add('hidden');
 }
 
-function tick() {
+function scanQR() {
   const video = document.getElementById('video');
   const canvas = document.getElementById('scanner');
   const context = canvas.getContext('2d');
@@ -320,21 +309,23 @@ function tick() {
     });
 
     if (code) {
-  stopScanner();
-  showProducts(code.data);
-  updateHistory(code.data);
-  document.getElementById('retryScanBtn').classList.remove('hidden');
-}
-
+      stopScanner();
+      showProducts(code.data);
+      updateHistory(code.data);
+    }
   }
 
-  requestAnimationFrame(tick);
+  if (AppState.videoStream) {
+    requestAnimationFrame(scanQR);
+  }
 }
 
-// Búsqueda manual por NOMBRE DE PRODUCTO
+// Búsqueda manual
 function toggleManualSearch() {
-  document.getElementById('manualInputContainer').classList.toggle('hidden');
-  if (!document.getElementById('manualInputContainer').classList.contains('hidden')) {
+  const container = document.getElementById('manualInputContainer');
+  container.classList.toggle('hidden');
+  
+  if (!container.classList.contains('hidden')) {
     document.getElementById('manualBodegaInput').focus();
   }
 }
@@ -344,9 +335,14 @@ function manualSearch() {
   const searchTerm = input.value.trim();
 
   if (searchTerm) {
-    const foundProducts = searchProductsByName(searchTerm);
+    const foundProducts = searchProducts(searchTerm);
+    
     if (foundProducts.length > 0) {
-      showProductSearchResults(foundProducts, searchTerm);
+      displayProducts(
+        foundProducts,
+        `Resultados para: "${searchTerm}"`,
+        `Mostrando ${foundProducts.length} productos encontrados`
+      );
       updateHistory(searchTerm);
       input.value = '';
       document.getElementById('manualInputContainer').classList.add('hidden');
@@ -358,83 +354,42 @@ function manualSearch() {
   }
 }
 
-function searchProductsByName(searchTerm) {
-  if (!productsData.length) return [];
+// Búsqueda mejorada (en nombre Y bodega)
+function searchProducts(searchTerm) {
+  if (!AppState.products.length) return [];
   
   const searchTermLower = normalize(searchTerm);
   
-  return productsData.filter(product => {
+  return AppState.products.filter(product => {
     const productName = normalize(product.Producto || '');
-    return productName.includes(searchTermLower);
-  });
-}
-
-function showProductSearchResults(products, searchTerm) {
-  document.getElementById('bodega-name').textContent = `Resultados para: "${searchTerm}"`;
-  document.getElementById('result').textContent = `Mostrando ${products.length} productos encontrados`;
-
-  const productsBody = document.getElementById('products-body');
-  productsBody.innerHTML = '';
-
-  if (!products.length) {
-    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos</td></tr>';
-    return;
-  }
-
-  // Ordenar por nombre de producto
-  products.sort((a, b) => (a.Producto || '').localeCompare(b.Producto || ''));
-
-  products.forEach(product => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.Producto || 'N/A'}</td>
-      <td>${product.Bodega || 'N/A'}</td>
-      <td>${product.Precio || 'N/A'}</td>
-    `;
-    productsBody.appendChild(row);
-  });
-
-  document.getElementById('products-container').classList.remove('hidden');
-  updateLastUpdateTime();
+    const bodegaName = normalize(product.Bodega || '');
+    
+    return productName.includes(searchTermLower) || 
+           bodegaName.includes(searchTermLower);
+  }).sort((a, b) => (a.Producto || '').localeCompare(b.Producto || ''));
 }
 
 // Mostrar productos por bodega (para QR)
 function showProducts(bodegaName) {
   const normalizedBodegaName = normalize(bodegaName);
-  document.getElementById('bodega-name').textContent = bodegaName;
-  document.getElementById('result').textContent = `Mostrando productos para: ${bodegaName}`;
-
-  const filteredProducts = productsData.filter(product =>
+  const filteredProducts = AppState.products.filter(product =>
     product.Bodega && normalize(product.Bodega) === normalizedBodegaName
   );
-
-  const productsBody = document.getElementById('products-body');
-  productsBody.innerHTML = '';
-
-  if (!filteredProducts.length) {
-    productsBody.innerHTML = '<tr><td colspan="3">No se encontraron productos para esta bodega</td></tr>';
-    return;
-  }
-
-  filteredProducts.forEach(product => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.Producto || 'N/A'}</td>
-      <td>${product.Bodega || 'N/A'}</td>
-      <td>${product.Precio || 'N/A'}</td>
-    `;
-    productsBody.appendChild(row);
-  });
-
-  document.getElementById('products-container').classList.remove('hidden');
-  updateLastUpdateTime();
+  
+  displayProducts(
+    filteredProducts,
+    bodegaName,
+    `Mostrando productos para: ${bodegaName}`
+  );
 }
 
+// Historial de búsquedas
 function updateHistory(searchTerm) {
   const normalizedTerm = searchTerm.trim();
-  if (!scanHistory.some(item => normalize(item) === normalize(normalizedTerm))) {
-    scanHistory.unshift(normalizedTerm);
-    if (scanHistory.length > 5) scanHistory.pop();
+  
+  if (!AppState.scanHistory.some(item => normalize(item) === normalize(normalizedTerm))) {
+    AppState.scanHistory.unshift(normalizedTerm);
+    if (AppState.scanHistory.length > 5) AppState.scanHistory.pop();
     renderHistory();
   }
 }
@@ -444,23 +399,27 @@ function renderHistory() {
   const list = document.getElementById('historyList');
 
   list.innerHTML = '';
-  scanHistory.forEach(term => {
+  
+  AppState.scanHistory.forEach(term => {
     const li = document.createElement('li');
     li.textContent = term;
     li.addEventListener('click', () => {
       document.getElementById('manualBodegaInput').value = term;
-      const foundProducts = searchProductsByName(term);
+      const foundProducts = searchProducts(term);
+      
       if (foundProducts.length > 0) {
-        showProductSearchResults(foundProducts, term);
+        displayProducts(
+          foundProducts,
+          `Resultados para: "${term}"`,
+          `Mostrando ${foundProducts.length} productos encontrados`
+        );
       }
+      
       document.getElementById('manualInputContainer').classList.add('hidden');
     });
+    
     list.appendChild(li);
   });
 
-  if (scanHistory.length > 0) {
-    container.classList.remove('hidden');
-  }
+  container.classList.toggle('hidden', AppState.scanHistory.length === 0);
 }
-
-

@@ -9,71 +9,60 @@
     <link rel="apple-touch-icon" href="img/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
-
-  
 </head>
-
 
 <body>
   <img src="./img/compañia de vinos logos-03.png" alt="Logo de la vinoteca" class="logo">
 
   <h1>CATÁLOGO INTERACTIVO DE VINOS</h1>
   
-  
   <section class="promo-banner">
-  <div class="promo-banner-header">
-    <h2>🎁 Promociones Destacadas 🎁</h2>
-  </div>
-  <div class="promo-carousel-wrapper">
-    <div class="promo-carousel-container">
-      <!-- Slides originales -->
-      <div class="promo-slide">
-        <img src="img/promos/Buhero_Promo.png" alt="Promo Buhero">
-      </div>
-      <div class="promo-slide">
-        <img src="img/promos/promo_branca.png" alt="Promo Branca">
-      </div>
-      <div class="promo-slide">
-        <img src="img/promos/promo_campari.png" alt="Promo Campari">
-      </div>
-      <div class="promo-slide">
-        <img src="img/promos/promo_carpano.png" alt="Promo Carpano">
-      </div>
-      <div class="promo-slide">
-        <img src="img/promos/promo_gancia.png" alt="Promo Gancia">
-      </div>
-      <div class="promo-slide">
-        <img src="img/promos/promo_mitos.png" alt="Promo Mitos">
-      </div>
-      <!-- Slides clonados se añadirán automáticamente -->
+    <div class="promo-banner-header">
+      <h2>🎁 Promociones Destacadas 🎁</h2>
     </div>
-    <div class="carousel-controls">
-      <div class="carousel-dot active"></div>
-      <div class="carousel-dot"></div>
-      <div class="carousel-dot"></div>
-      <div class="carousel-dot"></div>
-      <div class="carousel-dot"></div>
-      <div class="carousel-dot"></div>
+    <div class="promo-carousel-wrapper">
+      <div class="promo-carousel-container">
+        <div class="promo-slide">
+          <img src="img/promos/Buhero_Promo.png" alt="Promo Buhero">
+        </div>
+        <div class="promo-slide">
+          <img src="img/promos/promo_branca.png" alt="Promo Branca">
+        </div>
+        <div class="promo-slide">
+          <img src="img/promos/promo_campari.png" alt="Promo Campari">
+        </div>
+        <div class="promo-slide">
+          <img src="img/promos/promo_carpano.png" alt="Promo Carpano">
+        </div>
+        <div class="promo-slide">
+          <img src="img/promos/promo_gancia.png" alt="Promo Gancia">
+        </div>
+        <div class="promo-slide">
+          <img src="img/promos/promo_mitos.png" alt="Promo Mitos">
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <div class="carousel-dot active"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+      </div>
     </div>
-  </div>
-</section>
-
-
+  </section>
 
   <h1>Consulta de Productos</h1>
-
 
   <div id="connection-status" class="hidden">
     <p>Conectando al servidor para obtener datos actualizados...</p>
   </div>
 
-  <!-- Escáner QR -->
-   
   <div id="scanner-section">
-    <button id="startScanner" class="btn btn-scan">Escáner QR gondolas</button>
+    <button id="startScanner" class="btn btn-scan" aria-label="Activar escáner QR">Escáner QR gondolas</button>
     <div class="scanner-container hidden" id="scannerContainer">
       <canvas id="scanner" class="hidden"></canvas>
       <video id="video" width="100%" autoplay playsinline class="hidden"></video>
@@ -81,40 +70,30 @@
     </div>
   </div>
 
-
-
-  <!-- Búsqueda manual -->
   <div id="manual-search">
     <button id="toggleManualSearch" class="btn">Buscar Producto Manualmente</button>
-      <div id="manualInputContainer" class="hidden">
-        <input type="text" id="manualBodegaInput" placeholder="Escribí el nombre del producto" class="manual-input">
-        <button id="manualSearchBtn" class="btn">Buscar</button>
-      </div>
+    <div id="manualInputContainer" class="hidden">
+      <input type="text" id="manualBodegaInput" placeholder="Escribí el nombre o bodega del producto" class="manual-input">
+      <button id="manualSearchBtn" class="btn">Buscar</button>
+    </div>
     <div id="historyContainer" class="hidden">
       <p>Búsquedas recientes:</p>
       <ul id="historyList"></ul>
     </div>
   </div>
 
-  <!-- Resultado -->
   <div id="result">Escanea un código QR o buscá manualmente para ver los productos</div>
- 
 
-
-  <!-- Filtros por precio -->
   <div id="price-filters">
     <button class="btn price-filter" data-range="0-5000">🍷 Hasta $5.000</button>
     <button class="btn price-filter" data-range="5000-15000">🍾 Entre $5.000 y $15.000</button>
     <button class="btn price-filter" data-range="15000-999999">🏆 Más de $15.000</button>
   </div>
 
-
-  <!-- Loading -->
   <div id="loading" class="loading hidden">
     <p>Cargando datos actualizados...</p>
   </div>
 
-  <!-- Tabla -->
   <div id="products-container" class="hidden">
     <h2>Productos en Bodega: <span id="bodega-name"></span></h2>
     <div class="last-update">Última actualización: <span id="last-update-time"></span></div>
@@ -127,13 +106,13 @@
         </tr>
       </thead>
       <tbody id="products-body">
-        <!-- Productos insertados dinámicamente -->
       </tbody>
     </table>
   </div>
-<footer class="main-footer">
-  Compania de vinos 2025 &copy; by DM
-</footer>
+
+  <footer class="main-footer">
+    Compania de vinos 2025 &copy; by DM
+  </footer>
 
   <script src="./js/sw-register.js"></script>
   <script src="./js/main.js"></script>
