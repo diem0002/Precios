@@ -461,14 +461,17 @@ body {
   border-radius: var(--border-radius);
   margin-bottom: var(--space-lg);
   color: var(--white);
+  text-align: center;
 }
 
 .promo-banner-header {
   margin-bottom: var(--space-sm);
+  
 }
 
 .promo-banner-header h2 {
   font-size: var(--font-size-lg);
+  
 }
 
 .promo-carousel-wrapper {

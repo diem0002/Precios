@@ -103,9 +103,9 @@ function initCarousel() {
   startCarousel();
 }
 
-// Configuración de event listeners
+// Configuración de event listeners CORREGIDA
 function setupEventListeners() {
-  // Filtros de precio - CORREGIDO
+  // Filtros de precio
   document.querySelectorAll('.btn-filter').forEach(btn => {
     btn.addEventListener('click', function() {
       const range = this.getAttribute('data-range');
@@ -114,18 +114,37 @@ function setupEventListeners() {
     });
   });
 
-  // Scanner QR - CORREGIDO
-  document.getElementById('startScanner').addEventListener('click', startScanner);
-  document.getElementById('stopScanner').addEventListener('click', stopScanner);
+  // Scanner QR - Event listeners corregidos
+  const startBtn = document.getElementById('startScanner');
+  const stopBtn = document.getElementById('stopScanner');
+  
+  if (startBtn) {
+    startBtn.addEventListener('click', startScanner);
+  }
+  
+  if (stopBtn) {
+    stopBtn.addEventListener('click', stopScanner);
+  }
   
   // Búsqueda manual
-  document.getElementById('toggleManualSearch').addEventListener('click', toggleManualSearch);
-  document.getElementById('manualSearchBtn').addEventListener('click', manualSearch);
+  const toggleSearchBtn = document.getElementById('toggleManualSearch');
+  const manualSearchBtn = document.getElementById('manualSearchBtn');
+  
+  if (toggleSearchBtn) {
+    toggleSearchBtn.addEventListener('click', toggleManualSearch);
+  }
+  
+  if (manualSearchBtn) {
+    manualSearchBtn.addEventListener('click', manualSearch);
+  }
   
   // Mejorar accesibilidad del input
-  document.getElementById('manualBodegaInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') manualSearch();
-  });
+  const manualInput = document.getElementById('manualBodegaInput');
+  if (manualInput) {
+    manualInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') manualSearch();
+    });
+  }
 }
 
 // Normalización de texto para búsquedas
@@ -258,7 +277,7 @@ function updateLastUpdateTime() {
   document.getElementById('last-update-time').textContent = new Date().toLocaleString();
 }
 
-// Filtrado por precio - FUNCIÓN CORREGIDA
+// Filtrado por precio
 function showRandomProductsByPrice(minPrice, maxPrice) {
   if (!AppState.products || AppState.products.length === 0) {
     document.getElementById('result').textContent = 'Cargando datos... Por favor espera.';
@@ -352,16 +371,25 @@ function displayProducts(products, title, subtitle) {
   updateLastUpdateTime();
 }
 
-// Scanner QR - FUNCIÓN CORREGIDA
+// Scanner QR
 function startScanner() {
   if (AppState.isScanning) return;
   
   AppState.isScanning = true;
   const scannerContainer = document.getElementById('scannerContainer');
   const video = document.getElementById('video');
+  const startBtn = document.getElementById('startScanner');
+  const stopBtn = document.getElementById('stopScanner');
+
+  if (!scannerContainer || !video || !startBtn || !stopBtn) {
+    console.error('Elementos del scanner no encontrados');
+    AppState.isScanning = false;
+    return;
+  }
 
   scannerContainer.classList.remove('hidden');
-  document.getElementById('startScanner').classList.add('hidden');
+  startBtn.classList.add('hidden');
+  stopBtn.classList.remove('hidden');
 
   // Limpiar cualquier stream existente
   if (AppState.videoStream) {
@@ -397,24 +425,45 @@ function startScanner() {
     });
 }
 
-// FUNCIÓN STOP SCANNER CORREGIDA
+// Función stopScanner COMPLETAMENTE CORREGIDA
 function stopScanner() {
+  console.log('Ejecutando stopScanner'); // Para depuración
+  
+  // Detener el stream de video
   if (AppState.videoStream) {
+    console.log('Deteniendo stream de video');
     AppState.videoStream.getTracks().forEach(track => {
       track.stop();
     });
     AppState.videoStream = null;
   }
 
-  const scannerContainer = document.getElementById('scannerContainer');
+  // Ocultar elementos del scanner
   const video = document.getElementById('video');
+  const scannerContainer = document.getElementById('scannerContainer');
   const startBtn = document.getElementById('startScanner');
-
-  if (scannerContainer) scannerContainer.classList.add('hidden');
-  if (video) video.classList.add('hidden');
-  if (startBtn) startBtn.classList.remove('hidden');
+  const stopBtn = document.getElementById('stopScanner');
   
+  if (video) {
+    video.srcObject = null;
+    video.classList.add('hidden');
+  }
+  
+  if (scannerContainer) {
+    scannerContainer.classList.add('hidden');
+  }
+  
+  if (startBtn) {
+    startBtn.classList.remove('hidden');
+  }
+  
+  if (stopBtn) {
+    stopBtn.classList.add('hidden');
+  }
+
+  // Cambiar estado
   AppState.isScanning = false;
+  console.log('Scanner detenido correctamente');
 }
 
 function scanQR() {
@@ -449,15 +498,20 @@ function scanQR() {
 // Búsqueda manual
 function toggleManualSearch() {
   const container = document.getElementById('manualInputContainer');
-  container.classList.toggle('hidden');
-  
-  if (!container.classList.contains('hidden')) {
-    document.getElementById('manualBodegaInput').focus();
+  if (container) {
+    container.classList.toggle('hidden');
+    
+    if (!container.classList.contains('hidden')) {
+      const input = document.getElementById('manualBodegaInput');
+      if (input) input.focus();
+    }
   }
 }
 
 function manualSearch() {
   const input = document.getElementById('manualBodegaInput');
+  if (!input) return;
+
   const searchTerm = input.value.trim();
 
   if (searchTerm) {
@@ -471,7 +525,8 @@ function manualSearch() {
       );
       updateHistory(searchTerm);
       input.value = '';
-      document.getElementById('manualInputContainer').classList.add('hidden');
+      const inputContainer = document.getElementById('manualInputContainer');
+      if (inputContainer) inputContainer.classList.add('hidden');
     } else {
       document.getElementById('result').textContent = 'No se encontraron productos. Intenta con otro nombre.';
     }
@@ -528,13 +583,16 @@ function renderHistory() {
   const container = document.getElementById('historyContainer');
   const list = document.getElementById('historyList');
 
+  if (!container || !list) return;
+
   list.innerHTML = '';
   
   AppState.scanHistory.forEach(term => {
     const li = document.createElement('li');
     li.textContent = term;
     li.addEventListener('click', () => {
-      document.getElementById('manualBodegaInput').value = term;
+      const input = document.getElementById('manualBodegaInput');
+      if (input) input.value = term;
       const foundProducts = searchProducts(term);
       
       if (foundProducts.length > 0) {
@@ -545,7 +603,8 @@ function renderHistory() {
         );
       }
       
-      document.getElementById('manualInputContainer').classList.add('hidden');
+      const inputContainer = document.getElementById('manualInputContainer');
+      if (inputContainer) inputContainer.classList.add('hidden');
     });
     
     list.appendChild(li);
