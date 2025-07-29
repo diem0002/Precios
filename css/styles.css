@@ -89,7 +89,7 @@ body {
   margin-bottom: var(--space-sm);
   letter-spacing: 0.5px;
   position: relative;
-  display: inline-block;
+  
 }
 
 .app-title::after {
